@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .page-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+
+        .page-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .balance-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px 50px 20px;
+        }
+
+        .balance-label {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .content-section {
+            background: #f5f5f5;
+            padding: 0 20px 30px 20px;
+            margin-top: -30px;
+        }
+
+        .bank-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bank-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 150px;
+            height: 150px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .bank-card::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            right: 20px;
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+
+        .card-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+        }
+
+        .card-label {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .card-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .form-label {
+            color: #333;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .form-control {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .form-control:focus {
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .form-control::placeholder {
+            color: #999;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .pay-type-section {
+            margin: 25px 0;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+        }
+
+        .radio-option {
+            flex: 1;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-label {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .radio-circle {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            margin-right: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-label .radio-circle {
+            border-color: #667eea;
+            background: #667eea;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-label .radio-circle::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .radio-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .explain-section {
+            margin-top: 30px;
+        }
+
+        .explain-title {
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .explain-item {
+            color: #333;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-bottom: 12px;
+            padding-left: 5px;
+        }
+
+        .record-btn {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .record-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .withdraw-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 18px;
+            width: 100%;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-top: 30px;
+        }
+
+        .withdraw-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .withdraw-btn:active {
+            transform: translateY(0);
+        }
+
+        .withdraw-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .no-card-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .no-card-message i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ccc;
+        }
+
+        .no-card-message p {
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .add-card-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <button class="back-btn" onclick="window.history.back()">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h1>withdraw</h1>
+        </div>
+
+        <div class="balance-section">
+            <div class="balance-label">Balance</div>
+            <div class="balance-amount" id="userBalance">UGX0.00</div>
+        </div>
+
+        <div class="content-section">
+            <!-- Bank Card Display -->
+            <div id="bankCardDisplay">
+                <!-- Card will be displayed here if exists -->
+            </div>
+
+            <!-- Withdrawal Form -->
+            <div class="form-section">
+                <div class="mb-3">
+                    <label class="form-label">Amount</label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="withdrawAmount" 
+                        placeholder="Withdrawal amount  10000-5000000"
+                        oninput="formatAmount(this)">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Transaction password</label>
+                    <div class="password-wrapper">
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="transactionPassword" 
+                            placeholder="Transaction password">
+                        <button class="password-toggle" type="button" onclick="togglePassword()">
+                            <i class="fas fa-eye-slash" id="passwordIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pay-type-section">
+                    <label class="form-label">Pay Type</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" name="payType" id="ugx" value="UGX" checked>
+                            <label for="ugx" class="radio-label">
+                                <div class="radio-circle"></div>
+                                <span class="radio-text">UGX</span>
+                            </label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="payType" id="usdt" value="USDT">
+                            <label for="usdt" class="radio-label">
+                                <div class="radio-circle"></div>
+                                <span class="radio-text">USDT</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="explain-section">
+                    <div class="explain-title">Explain</div>
+                    <div class="explain-item">1. Daily marketing from 10:00:00 to 19:00:00</div>
+                    <div class="explain-item">2. Withdraw an amount between 10000 and 5000000</div>
+                    <div class="explain-item">3. To facilitate financial settlement, you can only request withdrawal 1 times per day</div>
+                    <div class="explain-item">4. Withdrawal rate: 10 percent</div>
+                </div>
+
+                <button class="withdraw-btn" onclick="applyWithdrawal()">
+                    Apply Withdrawal
+                </button>
+            </div>
+        </div>
+
+        <!-- Record Button -->
+        <button class="record-btn" onclick="viewRecords()">
+            Record <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 70px; margin-bottom: 20px;"></i>
+                    <h5 class="mb-3">Withdrawal Request Submitted!</h5>
+                    <p class="text-muted mb-4">Your withdrawal request has been submitted successfully and is being processed.</p>
+                    <button class="btn btn-success px-4" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-exclamation-circle text-danger" style="font-size: 70px; margin-bottom: 20px;"></i>
+                    <h5 class="mb-3" id="errorTitle">Error</h5>
+                    <p class="text-muted mb-4" id="errorMessage">An error occurred</p>
+                    <button class="btn btn-danger px-4" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+// ==================== UTILITY FUNCTIONS ====================
+
+/**
+ * Get CSRF token from cookies for POST requests
+ */
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/**
+ * Show error message
+ */
+function showError(message) {
+    document.getElementById('errorMessage').textContent = message;
+    const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+    modal.show();
+}
+
+/**
+ * Format amount input
+ */
+function formatAmount(input) {
+    let value = input.value.replace(/\D/g, '');
+    
+    if (value.length > 7) {
+        value = value.substr(0, 7);
+    }
+    
+    input.value = value;
+}
+
+/**
+ * Toggle password visibility
+ */
+function togglePassword() {
+    const passwordInput = document.getElementById('transactionPassword');
+    const passwordIcon = document.getElementById('passwordIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        passwordIcon.classList.remove('fa-eye-slash');
+        passwordIcon.classList.add('fa-eye');
+    } else {
+        passwordInput.type = 'password';
+        passwordIcon.classList.remove('fa-eye');
+        passwordIcon.classList.add('fa-eye-slash');
+    }
+}
+
+// ==================== WALLET DISPLAY FUNCTIONS ====================
+
+/**
+ * Display bank card information
+ */
+function displayBankCard(data) {
+    const cardDisplay = document.getElementById('bankCardDisplay');
+    const walletIcon = data.wallet_type === 'MTN' ? 'fa-mobile-alt' : 'fa-mobile-alt';
+    
+    cardDisplay.innerHTML = `
+        <div class="bank-card">
+            <div class="card-icon">
+                <i class="fas ${walletIcon}"></i>
+            </div>
+            <div class="card-number">${data.wallet_account}</div>
+            <div class="card-label">Cardholder Name</div>
+            <div class="card-name">${data.owner_name}</div>
+        </div>
+    `;
+}
+
+/**
+ * Show no card message
+ */
+function showNoCardMessage() {
+    const cardDisplay = document.getElementById('bankCardDisplay');
+    cardDisplay.innerHTML = `
+        <div class="no-card-message">
+            <i class="fas fa-credit-card"></i>
+            <p>No bank card information found</p>
+            <button class="add-card-btn" onclick="addBankCard()">
+                Add Bank Card
+            </button>
+        </div>
+    `;
+}
+
+/**
+ * Navigate to add bank card page
+ */
+function addBankCard() {
+    window.location.href = "/users/add-card/";
+}
+
+// ==================== WALLET DATA LOADING ====================
+
+/**
+ * Load wallet data from API
+ */
+async function loadWalletData() {
+    try {
+        const response = await fetch('/users/api/wallet/get/');
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.wallet_account) {
+                displayBankCard(data);
+                // Save to localStorage for offline access
+                localStorage.setItem('walletData', JSON.stringify(data));
+            } else {
+                showNoCardMessage();
+            }
+        } else {
+            showNoCardMessage();
+        }
+    } catch (error) {
+        console.error('Error fetching wallet data:', error);
+        showNoCardMessage();
+    }
+}
+
+// ==================== WITHDRAWAL APPLICATION ====================
+
+/**
+ * Apply for withdrawal
+ */
+async function applyWithdrawal() {
+    const amount = document.getElementById('withdrawAmount').value.trim();
+    const password = document.getElementById('transactionPassword').value;
+    const payType = document.querySelector('input[name="payType"]:checked').value;
+
+    // ========== VALIDATION ==========
+    
+    if (!amount) {
+        showError('Please enter withdrawal amount');
+        return;
+    }
+
+    const amountNum = parseInt(amount);
+    if (amountNum < 10000) {
+        showError('Minimum withdrawal amount is 10,000 UGX');
+        return;
+    }
+
+    if (amountNum > 5000000) {
+        showError('Maximum withdrawal amount is 5,000,000 UGX');
+        return;
+    }
+
+    if (!password) {
+        showError('Please enter transaction password');
+        return;
+    }
+
+    if (password.length < 6) {
+        showError('Transaction password must be at least 6 characters');
+        return;
+    }
+
+    // Check if wallet data exists
+    const walletData = localStorage.getItem('walletData');
+    if (!walletData) {
+        showError('Please add your bank card information first');
+        return;
+    }
+
+    // ========== DISABLE BUTTON ==========
+    
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    try {
+        // ========== API CALL ==========
+        
+        const response = await fetch('/users/api/withdrawal/apply/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                amount: amountNum,
+                password: password,
+                pay_type: payType
+            })
+        });
+
+        const data = await response.json();
+        
+        // ========== HANDLE RESPONSE ==========
+        
+        if (response.ok && data.success) {
+            // Success!
+            console.log('Withdrawal submitted:', data);
+            
+            // Show success modal
+            const modal = new bootstrap.Modal(document.getElementById('successModal'));
+            modal.show();
+
+            // Clear form
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('transactionPassword').value = '';
+            
+            // Reload balance after successful withdrawal
+            setTimeout(async () => {
+                await loadUserBalance();
+            }, 1000);
+            
+        } else {
+            // Error from server
+            const errorMessage = data.message || 'Failed to process withdrawal. Please try again.';
+            showError(errorMessage);
+            console.error('Server error:', data);
+        }
+        
+    } catch (error) {
+        // Network or other error
+        console.error('Error processing withdrawal:', error);
+        showError('An error occurred. Please check your connection and try again.');
+    } finally {
+        // ========== RESET BUTTON ==========
+        btn.disabled = false;
+        btn.innerHTML = 'Apply Withdrawal';
+    }
+}
+
+// ==================== BALANCE LOADING ====================
+
+/**
+ * Load user balance from API
+ */
+async function loadUserBalance() {
+    try {
+        const response = await fetch('/users/api/user/balance/');
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('userBalance').textContent = `UGX${data.withdrawal_balance.toFixed(2)}`;
+            console.log('Balance loaded:', data.withdrawal_balance);
+        } else {
+            console.error('Failed to load balance');
+        }
+    } catch (error) {
+        console.error('Error loading balance:', error);
+        document.getElementById('userBalance').textContent = 'UGX0.00';
+    }
+}
+
+// ==================== NAVIGATION ====================
+
+/**
+ * View withdrawal records
+ */
+function viewRecords() {
+    window.location.href = "/users/balance/";
+}
+
+/**
+ * Go back to previous page
+ */
+function goBack() {
+    window.history.back();
+}
+
+// ==================== PAGE INITIALIZATION ====================
+
+/**
+ * Initialize page when DOM is loaded
+ */
+window.addEventListener('load', async function() {
+    console.log('Initializing withdrawal page...');
+    
+    // Load user balance
+    await loadUserBalance();
+    
+    // Load wallet data
+    await loadWalletData();
+    
+    console.log('Withdrawal page initialized');
+});
+
+// ==================== STORAGE SYNC ====================
+
+/**
+ * Listen for storage events (when wallet data is updated in another tab/page)
+ */
+window.addEventListener('storage', function(e) {
+    if (e.key === 'walletData' && e.newValue) {
+        try {
+            const data = JSON.parse(e.newValue);
+            displayBankCard(data);
+            console.log('Wallet data synced from another tab');
+        } catch (error) {
+            console.error('Error syncing wallet data:', error);
+        }
+    }
+});
+
+// ==================== AUTO-REFRESH BALANCE ====================
+
+/**
+ * Refresh balance every 30 seconds (optional)
+ */
+function startAutoRefresh() {
+    setInterval(async () => {
+        await loadUserBalance();
+    }, 30000); // 30 seconds
+}
+
+// Uncomment to enable auto-refresh
+// startAutoRefresh();
+
+// ==================== FORM VALIDATION HELPERS ====================
+
+/**
+ * Validate amount on input
+ */
+const withdrawAmountInput = document.getElementById('withdrawAmount');
+if (withdrawAmountInput) {
+    withdrawAmountInput.addEventListener('input', function(e) {
+        formatAmount(this);
+    });
+    
+    withdrawAmountInput.addEventListener('blur', function(e) {
+        const value = parseInt(this.value);
+        if (value && value < 10000) {
+            showError('Minimum withdrawal amount is 10,000 UGX');
+        } else if (value && value > 5000000) {
+            showError('Maximum withdrawal amount is 5,000,000 UGX');
+        }
+    });
+}
+
+/**
+ * Handle Enter key press on password field
+ */
+const passwordInput = document.getElementById('transactionPassword');
+if (passwordInput) {
+    passwordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            applyWithdrawal();
+        }
+    });
+}
+
+// ==================== ERROR HANDLING ====================
+
+/**
+ * Global error handler
+ */
+window.addEventListener('error', function(event) {
+    console.error('Global error:', event.error);
+});
+
+/**
+ * Handle unhandled promise rejections
+ */
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+});
+
+// ==================== DEBUGGING TOOLS ====================
+
+/**
+ * Export functions for debugging
+ */
+window.withdrawalAPI = {
+    loadWalletData,
+    loadUserBalance,
+    applyWithdrawal,
+    getCookie,
+    showError
+};
+
+// Log initialization
+console.log('Withdrawal script loaded successfully');
+console.log('CSRF Token:', getCookie('csrftoken') ? 'Found' : 'Not found');
+</script>
+</body>
+</html>

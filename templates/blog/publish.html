@@ -1,0 +1,561 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaultrise Fund - Publish Blog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #5274F0;
+        }
+        
+        body {
+            background: #e8f5e9;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .page-header {
+            background: white;
+            color: #1a1a1a;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #1a1a1a;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .back-btn:hover {
+            opacity: 0.7;
+        }
+        
+        .content-wrapper {
+            padding: 20px 15px 100px 15px;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+        }
+        
+        .content-textarea {
+            width: 100%;
+            min-height: 200px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .content-textarea:focus {
+            outline: none;
+            border-color: #4ade80;
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+            background: white;
+        }
+        
+        .content-textarea::placeholder {
+            color: #999;
+        }
+        
+        .upload-section {
+            margin-top: 20px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d0d0d0;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+        
+        .upload-area:hover {
+            border-color: #4ade80;
+            background: #f0fdf4;
+        }
+        
+        .upload-icon {
+            font-size: 60px;
+            color: #4ade80;
+            margin-bottom: 10px;
+        }
+        
+        .upload-text {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .image-preview-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .image-preview-item {
+            position: relative;
+            padding-top: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+        
+        .image-preview-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .remove-image-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        
+        .remove-image-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
+        
+        .publish-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 18px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.4);
+            z-index: 100;
+        }
+        
+        .publish-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74, 222, 128, 0.5);
+        }
+        
+        .publish-btn:active {
+            transform: translateY(0);
+        }
+        
+        .publish-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .char-count {
+            text-align: right;
+            color: #999;
+            font-size: 0.85rem;
+            margin-top: 8px;
+        }
+        
+        .char-count.warning {
+            color: #ef4444;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <h1>Post Blog</h1>
+    </div>
+
+    <div class="content-wrapper">
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Content Section -->
+        <div class="form-section">
+            <div class="section-title">Content</div>
+            <textarea 
+                class="content-textarea" 
+                id="blogContent" 
+                placeholder="Share your experience, tips, or success story... (Min: 10 characters, Max: 2000 characters)"
+                maxlength="2000"
+                oninput="updateCharCount()"></textarea>
+            <div class="char-count" id="charCount">0/2000</div>
+        </div>
+
+        <!-- Upload Photos Section -->
+        <div class="form-section">
+            <div class="section-title">Upload photos (Optional)</div>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">
+                    <i class="fas fa-image"></i>
+                </div>
+                <div class="upload-text">Click to upload images</div>
+                <div class="upload-text" style="font-size: 0.8rem; margin-top: 5px;">
+                    Maximum 9 images • JPG, PNG, GIF, WebP • Max 5MB each
+                </div>
+            </div>
+            <input 
+                type="file" 
+                id="fileInput" 
+                multiple 
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" 
+                style="display: none;" 
+                onchange="handleImageUpload(event)">
+            
+            <div class="image-preview-container" id="imagePreviewContainer"></div>
+        </div>
+    </div>
+
+    <!-- Publish Button -->
+    <button class="publish-btn" id="publishBtn" onclick="publishBlog()">
+        <i class="fas fa-paper-plane"></i> Publish
+    </button>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 70px; margin-bottom: 20px;"></i>
+                    <h5 class="mb-3">Blog Published Successfully!</h5>
+                    <p class="text-muted mb-4">Your blog post has been submitted and is awaiting approval. You'll be notified once it's reviewed.</p>
+                    <button class="btn btn-success px-4" data-bs-dismiss="modal" onclick="redirectToBlog()">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let uploadedImages = [];
+        const maxImages = 9;
+        const maxFileSize = 5 * 1024 * 1024; // 5MB
+
+        // Get CSRF token for Django
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        // Show alert message
+        function showAlert(message, type = 'danger') {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'exclamation-circle'}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHTML;
+            
+            // Scroll to top to show alert
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.classList.remove('show');
+                    setTimeout(() => alert.remove(), 150);
+                }
+            }, 5000);
+        }
+
+        function goBack() {
+            const content = document.getElementById('blogContent').value.trim();
+            if (content || uploadedImages.length > 0) {
+                if (confirm('You have unsaved changes. Are you sure you want to go back?')) {
+                    window.location.href = "{% url 'blog' %}";
+                }
+            } else {
+                window.location.href = "{% url 'blog' %}";
+            }
+        }
+
+        function redirectToBlog() {
+            window.location.href = "{% url 'blog' %}";
+        }
+
+        function updateCharCount() {
+            const textarea = document.getElementById('blogContent');
+            const charCount = document.getElementById('charCount');
+            const currentLength = textarea.value.length;
+            
+            charCount.textContent = `${currentLength}/2000`;
+            
+            if (currentLength > 1800) {
+                charCount.classList.add('warning');
+            } else {
+                charCount.classList.remove('warning');
+            }
+        }
+
+        function handleImageUpload(event) {
+            const files = Array.from(event.target.files);
+            
+            if (uploadedImages.length + files.length > maxImages) {
+                showAlert(`You can only upload a maximum of ${maxImages} images`, 'warning');
+                return;
+            }
+
+            files.forEach(file => {
+                // Check file type
+                if (!file.type.startsWith('image/')) {
+                    showAlert('Please upload only image files', 'danger');
+                    return;
+                }
+
+                // Check file size
+                if (file.size > maxFileSize) {
+                    showAlert(`Image "${file.name}" is too large. Maximum size is 5MB`, 'danger');
+                    return;
+                }
+
+                // Check specific image formats
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    showAlert('Only JPG, PNG, GIF, and WebP images are allowed', 'danger');
+                    return;
+                }
+
+                // Read file and create preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImages.push({
+                        file: file,
+                        dataUrl: e.target.result
+                    });
+                    renderImagePreviews();
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Reset file input
+            event.target.value = '';
+        }
+
+        function renderImagePreviews() {
+            const container = document.getElementById('imagePreviewContainer');
+            
+            if (uploadedImages.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = uploadedImages.map((img, index) => `
+                <div class="image-preview-item">
+                    <img src="${img.dataUrl}" class="image-preview-img" alt="Preview ${index + 1}">
+                    <button class="remove-image-btn" onclick="removeImage(${index})" type="button">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function removeImage(index) {
+            uploadedImages.splice(index, 1);
+            renderImagePreviews();
+        }
+
+        async function publishBlog() {
+            const content = document.getElementById('blogContent').value.trim();
+            
+            // Validation
+            if (!content) {
+                showAlert('Please enter blog content', 'warning');
+                return;
+            }
+
+            if (content.length < 10) {
+                showAlert('Blog content should be at least 10 characters', 'warning');
+                return;
+            }
+
+            if (content.length > 2000) {
+                showAlert('Blog content should not exceed 2000 characters', 'warning');
+                return;
+            }
+
+            // Disable button to prevent double submission
+            const publishBtn = document.getElementById('publishBtn');
+            publishBtn.disabled = true;
+            publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+
+            try {
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('content', content);
+                
+                // Add images to form data
+                uploadedImages.forEach((img, index) => {
+                    formData.append(`images[${index}]`, img.file);
+                });
+
+                // Make API call to publish blog
+                const response = await fetch("{% url 'api_blog_publish' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Show success modal
+                    const modal = new bootstrap.Modal(document.getElementById('successModal'));
+                    modal.show();
+
+                    // Clear form
+                    document.getElementById('blogContent').value = '';
+                    uploadedImages = [];
+                    renderImagePreviews();
+                    updateCharCount();
+                } else {
+                    showAlert(result.message || 'Failed to publish blog. Please try again.', 'danger');
+                }
+            } catch (error) {
+                console.error('Error publishing blog:', error);
+                showAlert('An error occurred while publishing. Please check your connection and try again.', 'danger');
+            } finally {
+                // Reset button state
+                publishBtn.disabled = false;
+                publishBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish';
+            }
+        }
+
+        // Handle paste events for images
+        document.addEventListener('paste', function(event) {
+            const items = event.clipboardData.items;
+            
+            for (let item of items) {
+                if (item.type.startsWith('image/')) {
+                    event.preventDefault();
+                    const file = item.getAsFile();
+                    
+                    if (uploadedImages.length >= maxImages) {
+                        showAlert(`You can only upload a maximum of ${maxImages} images`, 'warning');
+                        return;
+                    }
+
+                    if (file.size > maxFileSize) {
+                        showAlert('Pasted image is too large. Maximum size is 5MB', 'danger');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        uploadedImages.push({
+                            file: file,
+                            dataUrl: e.target.result
+                        });
+                        renderImagePreviews();
+                        showAlert('Image pasted successfully!', 'success');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        });
+
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', function(e) {
+            const content = document.getElementById('blogContent').value.trim();
+            if (content || uploadedImages.length > 0) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Initialize
+        updateCharCount();
+    </script>
+</body>
+</html>

@@ -1,0 +1,653 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.mat-fill {
+    font-family: 'Material Symbols Outlined';
+    font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 40;
+    line-height: 1;
+    display: block;
+}
+
+.store-header {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+}
+.store-header h5 {
+    font-size: 17px; font-weight: 700; color: #fff;
+    margin: 0; letter-spacing: 0.3px;
+}
+.portfolio-btn {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.22); color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.4); border-radius: 20px;
+    padding: 5px 13px; font-size: 12px; font-weight: 600;
+    text-decoration: none; white-space: nowrap;
+}
+.portfolio-btn:hover { background: rgba(255,255,255,0.32); color: #fff; }
+
+.store-wrap {
+    display: flex;
+    height: calc(100vh - 52px - 60px);
+    overflow: hidden;
+}
+
+.cat-sidebar {
+    width: 80px; flex-shrink: 0; background: #fff;
+    border-right: 1px solid #ececec;
+    overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
+}
+.cat-sidebar::-webkit-scrollbar { display: none; }
+
+.cat-tab {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 4px;
+    width: 100%; padding: 14px 6px;
+    border: none; border-left: 3px solid transparent;
+    background: transparent; cursor: pointer; transition: all 0.15s;
+}
+.cat-tab .mat-fill { font-size: 22px; color: #c8c8c8; transition: color 0.15s; }
+.cat-tab .cat-lbl {
+    font-size: 10px; font-weight: 500; color: #c0c0c0;
+    line-height: 1.25; text-align: center; word-break: break-word;
+    max-width: 70px; transition: color 0.15s;
+}
+.cat-tab.active { border-left-color: #4f46e5; background: #f4f3ff; }
+.cat-tab.active .cat-lbl { color: #4f46e5; font-weight: 700; }
+.cat-tab[data-slug="stable"].active  .mat-fill { color: #2563eb; }
+.cat-tab[data-slug="welfare"].active .mat-fill { color: #ec4899; }
+.cat-tab[data-slug="popular"].active .mat-fill { color: #ea580c; }
+.cat-tab[data-slug="stable"]:hover   .mat-fill { color: #93c5fd; }
+.cat-tab[data-slug="welfare"]:hover  .mat-fill { color: #f9a8d4; }
+.cat-tab[data-slug="popular"]:hover  .mat-fill { color: #fdba74; }
+.cat-tab:hover .cat-lbl { color: #888; }
+
+.products-scroll {
+    flex: 1; overflow-y: auto; background: #f2f3f8;
+    padding: 10px 10px 80px;
+    scrollbar-width: thin; scrollbar-color: #ddd transparent;
+}
+.products-scroll::-webkit-scrollbar { width: 3px; }
+.products-scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+.invest-card {
+    background: #fff; border-radius: 12px; margin-bottom: 10px;
+    overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.card-top { display: flex; align-items: center; gap: 12px; padding: 13px 13px 11px; }
+.card-img {
+    width: 54px; height: 54px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+}
+.card-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+.card-img .mat-fill { font-size: 24px; }
+.card-img.c-stable  { background: #dbeafe; } .card-img.c-stable  .mat-fill { color: #2563eb; }
+.card-img.c-welfare { background: #fce7f3; } .card-img.c-welfare .mat-fill { color: #ec4899; }
+.card-img.c-popular { background: #ffedd5; } .card-img.c-popular .mat-fill { color: #ea580c; }
+.card-img.c-default { background: #ede9fe; } .card-img.c-default .mat-fill { color: #6366f1; }
+
+.card-meta-info { flex: 1; min-width: 0; }
+.card-name {
+    font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.card-vip {
+    display: inline-flex; align-items: center; gap: 3px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #fff; font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px;
+}
+.card-vip .mat-fill { font-size: 11px; color: #fff; display: inline; }
+
+.card-stats { border-top: 1px solid #f0f0f0; padding: 9px 13px 11px; }
+.stat-row { display: flex; justify-content: space-between; align-items: center; padding: 3.5px 0; }
+.stat-lbl { font-size: 12.5px; color: #9ca3af; }
+.stat-val { font-size: 12.5px; font-weight: 700; color: #4f46e5; }
+
+.invest-btn-wrap {
+    display: flex;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    margin: 0 13px 13px; border-radius: 10px; overflow: hidden; min-height: 44px;
+}
+.invest-price {
+    flex: 0 0 auto; padding: 0 14px; font-size: 13px; font-weight: 800; color: #fff;
+    background: rgba(0,0,0,0.18); border-right: 1px solid rgba(255,255,255,0.22);
+    display: flex; align-items: center; white-space: nowrap;
+}
+.invest-now-btn {
+    flex: 1; background: transparent; border: none; color: #fff;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background 0.15s; letter-spacing: 0.2px;
+}
+.invest-now-btn:hover { background: rgba(255,255,255,0.1); }
+
+.empty-state {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 60px 20px; color: #bbb; text-align: center;
+}
+.empty-state .mat-fill { font-size: 52px; color: #ddd; margin-bottom: 12px; }
+.empty-state p { font-size: 13px; }
+
+.dialog-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: flex; align-items: flex-end; justify-content: center; z-index: 3000;
+}
+.dialog-box {
+    background: #fff; border-radius: 22px 22px 0 0;
+    padding: 22px 16px 30px; width: 100%;
+    max-width: 520px; max-height: 90vh; overflow-y: auto;
+    animation: slideUp .25s ease;
+}
+@keyframes slideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.dialog-handle {
+    width: 38px; height: 4px; background: #e0e0e0;
+    border-radius: 4px; margin: 0 auto 18px;
+}
+.d-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #f3f3f3;
+}
+.d-row:last-child { border-bottom: none; }
+.d-lbl { font-size: 13px; color: #9ca3af; }
+.d-val { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+.d-val.blue   { color: #4f46e5; }
+.d-val.green  { color: #16a34a; }
+.d-val.orange { color: #ea580c; }
+
+.dialog-balance-row {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.dialog-balance-row.low-balance { background: #fff7ed; border-color: #fed7aa; }
+.dialog-balance-row .bal-lbl { font-size: 12px; color: #6b7280; }
+.dialog-balance-row .bal-val { font-size: 13px; font-weight: 700; color: #16a34a; }
+.dialog-balance-row.low-balance .bal-val { color: #ea580c; }
+
+.insuff-warning {
+    background: #fff1f2; border: 1px solid #fecdd3;
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;
+    font-size: 12.5px; color: #be123c; font-weight: 600;
+    display: none; align-items: center; gap: 8px;
+}
+
+@media (min-width: 600px) {
+    .dialog-overlay { align-items: center; }
+    .dialog-box { border-radius: 20px; }
+    .cat-sidebar { width: 88px; }
+}
+@media (min-width: 900px) {
+    .store-wrap { height: calc(100vh - 56px - 64px); }
+    .cat-sidebar { width: 96px; }
+    .cat-tab { padding: 16px 8px; }
+    .cat-tab .mat-fill { font-size: 24px; }
+    .cat-tab .cat-lbl { font-size: 10.5px; max-width: 80px; }
+}
+@media (max-width: 380px) {
+    .cat-sidebar { width: 64px; }
+    .cat-tab { padding: 12px 3px; }
+    .cat-tab .mat-fill { font-size: 20px; }
+    .cat-tab .cat-lbl { font-size: 9px; max-width: 58px; }
+    .card-img { width: 46px; height: 46px; }
+    .invest-price { padding: 0 10px; font-size: 12px; }
+}
+</style>
+
+<!-- ═══ BUY DIALOG ═══ -->
+<div id="product_dialog" class="dialog-overlay" style="display:none;">
+    <div class="dialog-box">
+        <div class="dialog-handle"></div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div id="dialog_img_wrap"
+                     style="width:50px;height:50px;border-radius:12px;overflow:hidden;
+                            display:flex;align-items:center;justify-content:center;
+                            background:#ede9fe;flex-shrink:0;">
+                    <span class="mat-fill" style="color:#6366f1;font-size:26px;">category</span>
+                </div>
+                <div>
+                    <div style="font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:5px;"
+                         id="dialog_name">—</div>
+                    <span class="card-vip">
+                        <span class="mat-fill" style="font-size:11px;color:#fff;display:inline;">workspace_premium</span>
+                        <span id="dialog_vip">VIP0</span>
+                    </span>
+                </div>
+            </div>
+            <button onclick="closeDialog()"
+                    style="background:none;border:none;font-size:22px;color:#bbb;cursor:pointer;padding:4px;line-height:1;">✕</button>
+        </div>
+
+        <!-- ✅ Balance row — shows recharge + withdrawal combined -->
+        <div class="dialog-balance-row" id="balance_row">
+            <span class="bal-lbl">💰 Available Balance</span>
+            <span class="bal-val" id="dialog_balance">Loading…</span>
+        </div>
+
+        <!-- Insufficient / blocked warning (shared for balance + VIP gating) -->
+        <div class="insuff-warning" id="insuff_warning">
+            <span>⚠️</span>
+            <span id="insuff_text">Insufficient balance.</span>
+        </div>
+
+        <!-- Product details -->
+        <div style="background:#f8f9fc;border-radius:14px;padding:14px 16px;margin-bottom:12px;">
+            <div style="font-size:10.5px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">
+                Product Details
+            </div>
+            <div class="d-row"><span class="d-lbl">Price per Share</span><span class="d-val blue"  id="d_price">UGX 0</span></div>
+            <div class="d-row"><span class="d-lbl">Revenue Period</span> <span class="d-val"       id="d_days">— Days</span></div>
+            <div class="d-row"><span class="d-lbl">Daily Income</span>   <span class="d-val green" id="d_daily">UGX 0</span></div>
+            <div class="d-row"><span class="d-lbl">Total Income</span>   <span class="d-val green" id="d_total">UGX 0</span></div>
+            <div class="d-row"><span class="d-lbl">Max Shares</span>     <span class="d-val"       id="d_max">—</span></div>
+        </div>
+
+        <!-- Buy shares -->
+        <div style="background:#f8f9fc;border-radius:14px;padding:14px 16px;margin-bottom:18px;">
+            <div style="font-size:10.5px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;">
+                Buy Shares
+            </div>
+            <div class="d-row" style="border-bottom:none;margin-bottom:8px;">
+                <span class="d-lbl">Quantity</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <button onclick="adjustShares(-1)"
+                            style="width:32px;height:32px;border-radius:8px;border:1.5px solid #e0e0e0;
+                                   background:#fff;font-size:18px;cursor:pointer;color:#4f46e5;font-weight:700;
+                                   display:flex;align-items:center;justify-content:center;">−</button>
+                    <input type="number" id="buy_num" value="1" min="1" readonly
+                           style="width:60px;text-align:center;border:1.5px solid #e0e0e0;
+                                  border-radius:8px;padding:5px;font-size:15px;font-weight:700;
+                                  color:#1a1a2e;outline:none;">
+                    <button onclick="adjustShares(1)"
+                            style="width:32px;height:32px;border-radius:8px;border:1.5px solid #e0e0e0;
+                                   background:#fff;font-size:18px;cursor:pointer;color:#4f46e5;font-weight:700;
+                                   display:flex;align-items:center;justify-content:center;">+</button>
+                </div>
+            </div>
+            <div class="d-row"><span class="d-lbl">Total Cost</span>       <span class="d-val orange" id="d_pay">UGX 0</span></div>
+            <div class="d-row"><span class="d-lbl">Expected Revenue</span> <span class="d-val green"  id="d_rev">UGX 0</span></div>
+        </div>
+
+        <button id="invest_btn" onclick="submitInvestment()"
+                style="width:100%;padding:15px;border:none;border-radius:14px;
+                       background:linear-gradient(135deg,#4f46e5,#7c3aed);
+                       color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+                       display:flex;align-items:center;justify-content:center;gap:8px;
+                       transition:opacity .2s;letter-spacing:.3px;">
+            <i class="bi bi-lightning-fill"></i> Invest Now
+        </button>
+
+        <a href="{% url 'recharge' %}" id="recharge_shortcut"
+           style="display:none;width:100%;margin-top:10px;padding:13px;border-radius:14px;
+                  background:#fff7ed;border:1.5px solid #fed7aa;color:#ea580c;
+                  font-size:14px;font-weight:700;text-align:center;text-decoration:none;">
+            ➕ Top Up Balance
+        </a>
+    </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<div class="store-header">
+    <h5>Investment List</h5>
+    <a href="{% url 'my-investments' %}" class="portfolio-btn">My Portfolio →</a>
+</div>
+
+<!-- ═══ BODY ═══ -->
+<div class="store-wrap">
+    <div class="cat-sidebar">
+        {% for cat in categories %}
+            {% if cat.slug == 'stable' %}
+            <button class="cat-tab {% if forloop.first %}active{% endif %}"
+                    data-slug="stable" onclick="filterCat('stable', this)">
+                <span class="mat-fill">verified_user</span>
+                <span class="cat-lbl">{{ cat.category_name }}</span>
+            </button>
+            {% elif cat.slug == 'welfare' %}
+            <button class="cat-tab" data-slug="welfare" onclick="filterCat('welfare', this)">
+                <span class="mat-fill">favorite</span>
+                <span class="cat-lbl">{{ cat.category_name }}</span>
+            </button>
+            {% elif cat.slug == 'popular' %}
+            <button class="cat-tab" data-slug="popular" onclick="filterCat('popular', this)">
+                <span class="mat-fill">local_fire_department</span>
+                <span class="cat-lbl">{{ cat.category_name }}</span>
+            </button>
+            {% else %}
+            <button class="cat-tab" data-slug="{{ cat.slug }}"
+                    onclick="filterCat('{{ cat.slug }}', this)">
+                <span class="mat-fill">category</span>
+                <span class="cat-lbl">{{ cat.category_name }}</span>
+            </button>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <div class="products-scroll" id="product_list"></div>
+</div>
+
+<script>
+const PRODUCTS   = JSON.parse('{{ products_json|safe }}');
+const CATEGORIES = JSON.parse('{{ categories_json|safe }}');
+
+let CP              = null;
+let userBalance     = 0;   // ✅ recharge + withdrawal combined
+let rechargeBalance = 0;
+let withdrawalBalance = 0;
+let userVipLevel    = 0;   // ✅ tracked so we can warn before the user even taps Invest
+
+const CAT = {
+    stable:  { icon:'verified_user',         cls:'c-stable',  bg:'#dbeafe', col:'#2563eb' },
+    welfare: { icon:'favorite',              cls:'c-welfare', bg:'#fce7f3', col:'#ec4899' },
+    popular: { icon:'local_fire_department', cls:'c-popular', bg:'#ffedd5', col:'#ea580c' },
+    default: { icon:'category',              cls:'c-default', bg:'#ede9fe', col:'#6366f1' },
+};
+
+function cfg(catName) {
+    const n = (catName || '').toLowerCase();
+    if (n.includes('stable'))  return CAT.stable;
+    if (n.includes('welfare')) return CAT.welfare;
+    if (n.includes('popular')) return CAT.popular;
+    return CAT.default;
+}
+function fmt(n) { return Number(n || 0).toLocaleString(); }
+function csrf() {
+    const v = `; ${document.cookie}`.split('; csrftoken=');
+    return v.length === 2 ? v.pop().split(';').shift() : '';
+}
+
+/* ── Fetch balance ──────────────────────────────────────────────────────── */
+async function fetchBalance() {
+    try {
+        const r = await fetch('/users/api/user/balance/', {
+            credentials: 'same-origin',
+            headers: { 'X-CSRFToken': csrf() },
+        });
+        if (!r.ok) { console.warn('Balance fetch failed:', r.status); return; }
+        const data = await r.json();
+        if (data.success) {
+            rechargeBalance   = parseFloat(data.recharge_balance)   || 0;
+            withdrawalBalance = parseFloat(data.withdrawal_balance) || 0;
+            // ✅ Both balances are spendable for purchases
+            userBalance  = rechargeBalance + withdrawalBalance;
+            userVipLevel = parseInt(data.vip_level) || 0;
+            console.log(`✅ Balance — Recharge: ${rechargeBalance}, Withdrawal: ${withdrawalBalance}, Total: ${userBalance}, VIP: ${userVipLevel}`);
+        }
+    } catch (e) {
+        console.warn('Could not fetch balance:', e);
+    }
+}
+
+/* ── Render cards ───────────────────────────────────────────────────────── */
+function renderCat(slug) {
+    const container = document.getElementById('product_list');
+    const cat  = CATEGORIES.find(c => c.slug === slug);
+    const list = cat ? PRODUCTS.filter(p => p.category_name === cat.name) : PRODUCTS;
+
+    if (!list.length) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <span class="mat-fill">inventory_2</span>
+                <p>No products in this category yet.</p>
+            </div>`;
+        return;
+    }
+
+    container.innerHTML = list.map(p => {
+        const c    = cfg(p.category_name);
+        const pStr = JSON.stringify(p).replace(/</g,'\\u003c').replace(/'/g,"&#39;");
+        const imgHtml = p.image
+            ? `<img src="${p.image}" alt="${p.product_name}">`
+            : `<span class="mat-fill">${c.icon}</span>`;
+        return `
+        <div class="invest-card">
+            <div class="card-top">
+                <div class="card-img ${c.cls}">${imgHtml}</div>
+                <div class="card-meta-info">
+                    <div class="card-name">${p.product_name}</div>
+                    <span class="card-vip">
+                        <span class="mat-fill" style="font-size:11px;color:#fff;display:inline;">workspace_premium</span>
+                        VIP${p.minimum_vip_level}
+                    </span>
+                </div>
+            </div>
+            <div class="card-stats">
+                <div class="stat-row"><span class="stat-lbl">Revenue</span>        <span class="stat-val">${p.revenue_days} Days</span></div>
+                <div class="stat-row"><span class="stat-lbl">Daily Earnings</span> <span class="stat-val">UGX ${fmt(p.daily_income)}</span></div>
+                <div class="stat-row"><span class="stat-lbl">Total Revenue</span>  <span class="stat-val">UGX ${fmt(p.total_income)}</span></div>
+            </div>
+            <div class="invest-btn-wrap">
+                <div class="invest-price">UGX ${fmt(p.price)}</div>
+                <button class="invest-now-btn" onclick='openDialog(${pStr})'>
+                    <i class="bi bi-lightning-fill"></i> Invest Now
+                </button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function filterCat(slug, btn) {
+    document.querySelectorAll('.cat-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderCat(slug);
+}
+
+/* ── Open dialog ────────────────────────────────────────────────────────── */
+async function openDialog(p) {
+    CP = p;
+    const c = cfg(p.category_name);
+
+    document.getElementById('dialog_name').textContent = p.product_name;
+    document.getElementById('dialog_vip').textContent  = `VIP${p.minimum_vip_level}`;
+    document.getElementById('d_price').textContent     = `UGX ${fmt(p.price)}`;
+    document.getElementById('d_days').textContent      = `${p.revenue_days} Days`;
+    document.getElementById('d_daily').textContent     = `UGX ${fmt(p.daily_income)}`;
+    document.getElementById('d_total').textContent     = `UGX ${fmt(p.total_income)}`;
+    document.getElementById('d_max').textContent       = p.max_shares > 0 ? p.max_shares : 'Unlimited';
+
+    const iw = document.getElementById('dialog_img_wrap');
+    iw.style.background = c.bg;
+    iw.innerHTML = p.image
+        ? `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;">`
+        : `<span class="mat-fill" style="color:${c.col};font-size:26px;">${c.icon}</span>`;
+
+    document.getElementById('buy_num').value = 1;
+    document.getElementById('buy_num').max   = p.max_shares || 9999;
+
+    document.getElementById('dialog_balance').textContent      = 'Loading…';
+    document.getElementById('insuff_warning').style.display    = 'none';
+    document.getElementById('recharge_shortcut').style.display = 'none';
+    document.getElementById('balance_row').classList.remove('low-balance');
+
+    const btn = document.getElementById('invest_btn');
+    btn.style.opacity       = '0.5';
+    btn.style.pointerEvents = 'none';
+    btn.innerHTML           = '<span class="spinner-border spinner-border-sm" style="border-width:2px;"></span>&nbsp;Loading…';
+
+    document.getElementById('product_dialog').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    // ✅ await real balance (and VIP level) before calculating
+    await fetchBalance();
+    calcPay(parseInt(document.getElementById('buy_num').value) || 1);
+}
+
+function closeDialog() {
+    document.getElementById('product_dialog').style.display = 'none';
+    document.body.style.overflow = '';
+    document.getElementById('recharge_shortcut').style.display = 'none';
+    document.getElementById('insuff_warning').style.display    = 'none';
+}
+
+document.getElementById('product_dialog').addEventListener('click', e => {
+    if (e.target.id === 'product_dialog') closeDialog();
+});
+
+function adjustShares(d) {
+    if (!CP) return;
+    const inp = document.getElementById('buy_num');
+    inp.value = Math.min(CP.max_shares || 9999, Math.max(1, (parseInt(inp.value) || 1) + d));
+    calcPay(parseInt(inp.value));
+}
+
+/* ── Calculate & check VIP level + combined balance ─────────────────────── */
+function calcPay(shares) {
+    if (!CP) return;
+
+    const totalCost = shares * parseFloat(CP.price       || 0);
+    const totalRev  = shares * parseFloat(CP.total_income || 0);
+
+    document.getElementById('d_pay').textContent = `UGX ${totalCost.toLocaleString()}`;
+    document.getElementById('d_rev').textContent = `UGX ${totalRev.toLocaleString()}`;
+
+    const balRow = document.getElementById('balance_row');
+    const balVal = document.getElementById('dialog_balance');
+    const btn    = document.getElementById('invest_btn');
+
+    // ✅ Show combined balance
+    balVal.textContent = `UGX ${userBalance.toLocaleString()}`;
+
+    const requiredVip   = parseInt(CP.minimum_vip_level) || 0;
+    const vipBlocked    = userVipLevel < requiredVip;
+    const balanceOk     = userBalance >= totalCost;
+
+    if (vipBlocked) {
+        // ✅ VIP level gate — checked first since topping up balance won't help here
+        balRow.classList.remove('low-balance');
+        balVal.style.color = '#16a34a';
+        document.getElementById('insuff_warning').style.display = 'flex';
+        document.getElementById('insuff_text').textContent =
+            `This plan requires VIP Level ${requiredVip}. You are currently VIP ${userVipLevel}. Upgrade your VIP level to invest.`;
+        document.getElementById('recharge_shortcut').style.display = 'none';
+        btn.style.opacity       = '0.45';
+        btn.style.pointerEvents = 'none';
+        btn.innerHTML = '<i class="bi bi-lock-fill"></i> VIP Level Required';
+    } else if (balanceOk) {
+        balRow.classList.remove('low-balance');
+        balVal.style.color = '#16a34a';
+        document.getElementById('insuff_warning').style.display    = 'none';
+        document.getElementById('recharge_shortcut').style.display = 'none';
+        btn.style.opacity       = '1';
+        btn.style.pointerEvents = 'auto';
+        btn.innerHTML = '<i class="bi bi-lightning-fill"></i> Invest Now';
+    } else {
+        const shortfall = totalCost - userBalance;
+        balRow.classList.add('low-balance');
+        balVal.style.color = '#ea580c';
+        document.getElementById('insuff_warning').style.display = 'flex';
+        document.getElementById('insuff_text').textContent =
+            `You need UGX ${shortfall.toLocaleString()} more. Please top up your balance.`;
+        document.getElementById('recharge_shortcut').style.display = 'block';
+        btn.style.opacity       = '0.45';
+        btn.style.pointerEvents = 'none';
+        btn.innerHTML = '<i class="bi bi-lock-fill"></i> Insufficient Balance';
+    }
+}
+
+/* ── Submit investment ──────────────────────────────────────────────────── */
+async function submitInvestment() {
+    if (!CP) return;
+    const shares    = parseInt(document.getElementById('buy_num').value) || 1;
+    const totalCost = shares * parseFloat(CP.price || 0);
+
+    const requiredVip = parseInt(CP.minimum_vip_level) || 0;
+    if (userVipLevel < requiredVip) {
+        showToast(`This plan requires VIP Level ${requiredVip}. You are currently VIP ${userVipLevel}.`, 'error');
+        return;
+    }
+    if (userBalance < totalCost) {
+        showToast('Insufficient balance. Please top up first.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('invest_btn');
+    btn.disabled  = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm" style="border-width:2px;"></span>&nbsp;Processing…';
+
+    try {
+        const r = await fetch('/users/api/product/purchase/', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf() },
+            body: JSON.stringify({ product_id: CP.id, quantity: shares }),
+        });
+
+        // ✅ Always try to read the JSON body first — Django sends back the
+        // real reason ("VIP Level 1 required", "Insufficient balance...",
+        // etc.) in the body even on 400 responses. Throwing on !r.ok before
+        // reading it is what was swallowing the actual error message and
+        // showing the generic "Something went wrong" toast instead.
+        let data;
+        try {
+            data = await r.json();
+        } catch (parseErr) {
+            throw new Error(`Server returned ${r.status} with a non-JSON response`);
+        }
+
+        closeDialog();
+
+        if (data.success) {
+            showToast(`✅ Investment successful! ${shares} share(s) in ${CP.product_name}`, 'success');
+            await fetchBalance();
+            setTimeout(() => { window.location.href = "{% url 'my-investments' %}"; }, 1500);
+        } else {
+            // ✅ Show the backend's actual message instead of a generic one
+            showToast(data.message || 'Investment failed. Please try again.', 'error');
+            const msg = (data.message || '').toLowerCase();
+            if (msg.includes('balance') || msg.includes('vip')) {
+                openDialog(CP);
+            }
+        }
+    } catch (e) {
+        console.error('submitInvestment error:', e);
+        showToast('Something went wrong. Please check your connection.', 'error');
+    } finally {
+        btn.disabled        = false;
+        btn.style.opacity   = '1';
+        btn.style.pointerEvents = 'auto';
+        btn.innerHTML       = '<i class="bi bi-lightning-fill"></i> Invest Now';
+    }
+}
+
+function showToast(msg, type = 'info') {
+    if (window.Swal) {
+        Swal.fire({
+            icon: type === 'success' ? 'success' : (type === 'error' ? 'error' : 'info'),
+            title: type === 'success' ? 'Success!' : (type === 'error' ? 'Oops!' : 'Notice'),
+            text: msg, confirmButtonColor: '#4f46e5',
+            timer: type === 'success' ? 2500 : undefined,
+            timerProgressBar: type === 'success',
+        });
+        return;
+    }
+    let toast = document.getElementById('__toast__');
+    if (!toast) {
+        toast = document.createElement('div'); toast.id = '__toast__';
+        toast.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+            padding:12px 22px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;
+            box-shadow:0 4px 20px rgba(0,0,0,0.3);max-width:320px;text-align:center;
+            transition:opacity .3s;color:#fff;`;
+        document.body.appendChild(toast);
+    }
+    toast.style.background = type === 'error' ? '#be123c' : (type === 'success' ? '#15803d' : '#1a1a2e');
+    toast.textContent = msg; toast.style.opacity = '1';
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchBalance();
+    const firstSlug = CATEGORIES.length ? CATEGORIES[0].slug : null;
+    if (firstSlug) renderCat(firstSlug);
+});
+</script>
+
+{% endblock %}

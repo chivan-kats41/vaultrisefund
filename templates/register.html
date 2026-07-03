@@ -1,0 +1,600 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaultrise Fund - Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+        }
+
+        .mobile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .content {
+            padding: 24px 20px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 16px;
+        }
+
+        .welcome-section h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #000;
+        }
+
+        .welcome-section p {
+            font-size: 16px;
+            color: #999;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+            margin-bottom: 8px;
+        }
+
+        .form-group label .required-star {
+            color: #e53935;
+            margin-left: 2px;
+        }
+
+        .phone-input-wrapper {
+            display: flex;
+            gap: 8px;
+        }
+
+        .phone-code {
+            background-color: #f5f5f5;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+            width: 70px;
+            text-align: left;
+        }
+
+        .phone-input-wrapper input {
+            flex: 1;
+            background-color: #f5f5f5;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #666;
+            outline: none;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .form-group input::placeholder {
+            color: #ccc;
+        }
+
+        .form-group input:focus {
+            background-color: #eee;
+            border: 1px solid #2196F3;
+        }
+
+        .form-group input[readonly] {
+            background-color: #f0f8ff;
+            border: 1px solid #90caf9;
+            color: #1565c0;
+            font-weight: 600;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            font-size: 18px;
+        }
+
+        .invitation-wrapper {
+            position: relative;
+        }
+
+        .clear-invitation {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ccc;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .invitation-locked-note {
+            font-size: 12px;
+            color: #1565c0;
+            margin-top: 6px;
+            display: none;
+        }
+        .invitation-locked-note.show { display: block; }
+
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+            border-left: 4px solid #c62828;
+        }
+        .error-message.show { display: block; }
+
+        .success-message {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+            border-left: 4px solid #2e7d32;
+        }
+        .success-message.show { display: block; }
+
+        .warning-message {
+            background-color: #fff3e0;
+            color: #e65100;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            display: none;
+            border-left: 4px solid #e65100;
+        }
+        .warning-message.show { display: block; }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            color: #2196F3;
+            font-size: 14px;
+        }
+        .loading.show { display: block; }
+
+        .signup-btn {
+            width: 100%;
+            padding: 16px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            margin-bottom: 16px;
+            transition: background-color 0.3s;
+        }
+        .signup-btn:active { background-color: #1976D2; }
+        .signup-btn:disabled { background-color: #bbb; cursor: not-allowed; }
+
+        .footer-link {
+            text-align: center;
+            font-size: 14px;
+            color: #999;
+        }
+        .footer-link a {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #2196F3;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .password-match-hint {
+            font-size: 12px;
+            margin-top: 6px;
+            display: none;
+        }
+        .password-match-hint.show { display: block; }
+        .password-match-hint.ok { color: #2e7d32; }
+        .password-match-hint.bad { color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="content">
+            <div class="welcome-section">
+                <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="30,50 50,20 70,50 60,45 50,30 40,45" fill="#FFD700"/>
+                    <polygon points="45,50 65,20 85,50 75,45 65,30 55,45" fill="#1a1a1a"/>
+                </svg>
+                <h2>VAULTRISE FUND</h2>
+                <h2>Welcome to Sign Up</h2>
+                <p>Create your account</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'error' %}
+                        <div class="error-message show">{{ message }}</div>
+                    {% elif message.tags == 'success' %}
+                        <div class="success-message show">{{ message }}</div>
+                    {% elif message.tags == 'warning' %}
+                        <div class="warning-message show">{{ message }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <div id="errorMessage" class="error-message"></div>
+            <div id="successMessage" class="success-message"></div>
+            <div id="warningMessage" class="warning-message"></div>
+            <div id="loading" class="loading"><span class="spinner"></span>Creating account...</div>
+
+            <form id="signupForm" method="POST" action="{% url 'register' %}">
+                {% csrf_token %}
+
+                <!-- Phone Number Field -->
+                <div class="form-group">
+                    <label for="phone">Phone Number <span class="required-star">*</span></label>
+                    <div class="phone-input-wrapper">
+                        <input type="text" class="phone-code" value="+256" readonly>
+                        <input
+                            type="text"
+                            name="phone"
+                            id="phone"
+                            placeholder="7XXXXXXXX"
+                            required
+                            maxlength="10"
+                            value="{{ request.POST.phone|default:'' }}"
+                        >
+                    </div>
+                    <small class="text-muted">Enter your phone number without country code</small>
+                </div>
+
+                <!-- Email Field -->
+                <div class="form-group">
+                    <label for="email">Email <span class="required-star">*</span></label>
+                    <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        placeholder="example@email.com"
+                        required
+                        value="{{ request.POST.email|default:'' }}"
+                    >
+                </div>
+
+                <!-- Password Field -->
+                <div class="form-group">
+                    <label for="password">Login Password <span class="required-star">*</span></label>
+                    <div class="password-wrapper">
+                        <input
+                            type="password"
+                            name="password"
+                            id="password"
+                            placeholder="At least 6 characters"
+                            required
+                            minlength="6"
+                        >
+                        <button type="button" class="toggle-password" onclick="togglePassword('password', this)">👁</button>
+                    </div>
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password <span class="required-star">*</span></label>
+                    <div class="password-wrapper">
+                        <input
+                            type="password"
+                            id="confirm_password"
+                            placeholder="Re-enter your password"
+                            required
+                            minlength="6"
+                        >
+                        <button type="button" class="toggle-password" onclick="togglePassword('confirm_password', this)">👁</button>
+                    </div>
+                    <div id="passwordMatchHint" class="password-match-hint"></div>
+                </div>
+
+                <!-- Nickname Field -->
+                <div class="form-group">
+                    <label for="nickname">Nickname <span class="required-star">*</span></label>
+                    <input
+                        type="text"
+                        name="nickname"
+                        id="nickname"
+                        placeholder="Enter your nickname"
+                        required
+                        minlength="3"
+                        value="{{ request.POST.nickname|default:'' }}"
+                    >
+                </div>
+
+                <!-- Invitation Code Field (now required) -->
+                <div class="form-group">
+                    <label for="invitation_code">Invitation Code <span class="required-star">*</span></label>
+                    <div class="invitation-wrapper">
+                        <input
+                            type="text"
+                            name="invitation_code"
+                            id="invitation_code"
+                            placeholder="Enter invitation code"
+                            required
+                            value="{{ request.POST.invitation_code|default:'' }}"
+                        >
+                        <button type="button" class="clear-invitation" onclick="clearInvitation()" id="clearInvitationBtn">×</button>
+                    </div>
+                    <div id="invitationLockedNote" class="invitation-locked-note">
+                        ✓ Invitation code applied from your referral link
+                    </div>
+                </div>
+
+                <button type="submit" class="signup-btn" id="submitBtn">Sign Up Now</button>
+            </form>
+
+            <div class="footer-link">
+                Already have an account? <a href="{% url 'login' %}">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ==================== AUTO-FILL INVITATION CODE FROM URL ====================
+        // Supports links like /register/?invitation_code=ABC123 or /register/?ref=ABC123
+        (function autoFillInvitationCode() {
+            const params = new URLSearchParams(window.location.search);
+            const codeFromUrl = params.get('invitation_code') || params.get('ref') || params.get('code');
+            const field = document.getElementById('invitation_code');
+
+            // Only auto-fill if the field is empty (don't overwrite a value
+            // already restored from request.POST after a failed submit)
+            if (codeFromUrl && !field.value) {
+                field.value = codeFromUrl;
+                field.readOnly = true;
+                document.getElementById('clearInvitationBtn').style.display = 'none';
+                document.getElementById('invitationLockedNote').classList.add('show');
+            }
+        })();
+
+        function clearInvitation() {
+            const field = document.getElementById('invitation_code');
+            if (field.readOnly) return; // locked codes from a referral link can't be cleared
+            field.value = '';
+        }
+
+        // ==================== PASSWORD TOGGLE ====================
+        function togglePassword(fieldId, btn) {
+            const input = document.getElementById(fieldId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // ==================== MESSAGES ====================
+        function showMessage(message, type = 'error') {
+            const errorDiv   = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            const warningDiv = document.getElementById('warningMessage');
+
+            errorDiv.classList.remove('show');
+            successDiv.classList.remove('show');
+            warningDiv.classList.remove('show');
+
+            if (type === 'error') {
+                errorDiv.textContent = message;
+                errorDiv.classList.add('show');
+            } else if (type === 'success') {
+                successDiv.textContent = message;
+                successDiv.classList.add('show');
+            } else if (type === 'warning') {
+                warningDiv.textContent = message;
+                warningDiv.classList.add('show');
+            }
+
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+                successDiv.classList.remove('show');
+                warningDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMessage').classList.remove('show');
+            document.getElementById('successMessage').classList.remove('show');
+            document.getElementById('warningMessage').classList.remove('show');
+        }
+
+        // ==================== VALIDATION HELPERS ====================
+        function validateEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        function validatePhone(phone) {
+            return /^[07]\d{8,9}$/.test(phone);
+        }
+
+        // ==================== LIVE PASSWORD MATCH FEEDBACK ====================
+        function checkPasswordMatch() {
+            const pw    = document.getElementById('password').value;
+            const cpw   = document.getElementById('confirm_password').value;
+            const hint  = document.getElementById('passwordMatchHint');
+
+            if (!cpw) {
+                hint.classList.remove('show', 'ok', 'bad');
+                return;
+            }
+            hint.classList.add('show');
+            if (pw === cpw) {
+                hint.textContent = '✓ Passwords match';
+                hint.classList.remove('bad');
+                hint.classList.add('ok');
+            } else {
+                hint.textContent = '✗ Passwords do not match';
+                hint.classList.remove('ok');
+                hint.classList.add('bad');
+            }
+        }
+        document.getElementById('password').addEventListener('input', checkPasswordMatch);
+        document.getElementById('confirm_password').addEventListener('input', checkPasswordMatch);
+
+        // ==================== FORM VALIDATION ====================
+        function validateForm() {
+            const phone           = document.getElementById('phone').value.trim();
+            const email            = document.getElementById('email').value.trim();
+            const password         = document.getElementById('password').value;
+            const confirmPassword  = document.getElementById('confirm_password').value;
+            const nickname         = document.getElementById('nickname').value.trim();
+            const invitationCode   = document.getElementById('invitation_code').value.trim();
+
+            if (!phone) {
+                showMessage('Please enter your phone number', 'error');
+                return false;
+            }
+            if (!validatePhone(phone)) {
+                showMessage('Please enter a valid Uganda phone number (e.g., 772123456)', 'error');
+                return false;
+            }
+
+            if (!email) {
+                showMessage('Please enter your email', 'error');
+                return false;
+            }
+            if (!validateEmail(email)) {
+                showMessage('Please enter a valid email address', 'error');
+                return false;
+            }
+
+            if (!password) {
+                showMessage('Please enter your password', 'error');
+                return false;
+            }
+            if (password.length < 6) {
+                showMessage('Password must be at least 6 characters', 'error');
+                return false;
+            }
+
+            if (!confirmPassword) {
+                showMessage('Please confirm your password', 'error');
+                return false;
+            }
+            if (password !== confirmPassword) {
+                showMessage('Passwords do not match', 'error');
+                return false;
+            }
+
+            if (!nickname) {
+                showMessage('Please enter your nickname', 'error');
+                return false;
+            }
+            if (nickname.length < 3) {
+                showMessage('Nickname must be at least 3 characters', 'error');
+                return false;
+            }
+
+            if (!invitationCode) {
+                showMessage('An invitation code is required to sign up', 'error');
+                return false;
+            }
+
+            return true;
+        }
+
+        // ==================== FORM SUBMISSION ====================
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            hideMessages();
+
+            if (!validateForm()) return;
+
+            const submitBtn = document.getElementById('submitBtn');
+            const loading   = document.getElementById('loading');
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+            loading.classList.add('show');
+
+            this.submit();
+        });
+
+        // Format phone input (digits only)
+        document.getElementById('phone').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^\d]/g, '');
+        });
+
+        // Auto-hide Django messages after 5 seconds
+        window.addEventListener('load', function() {
+            const msgs = document.querySelectorAll('.error-message.show, .success-message.show, .warning-message.show');
+            msgs.forEach(msg => {
+                setTimeout(() => { msg.classList.remove('show'); }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

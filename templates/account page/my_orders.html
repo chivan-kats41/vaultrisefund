@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f5f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 0; padding-bottom: 80px;
+        }
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px; position: relative;
+        }
+        .page-header h1 {
+            font-size: 1.5rem; margin: 0; text-align: center; font-weight: 600;
+        }
+        .back-btn {
+            position: absolute; left: 20px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: white; font-size: 1.5rem;
+            cursor: pointer; padding: 0;
+        }
+        .tabs-container {
+            background: white; border-radius: 15px 15px 0 0;
+            margin-top: 10px; padding: 15px 0 0 0;
+            position: sticky; top: 0; z-index: 10;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .nav-tabs { border: none; justify-content: space-around; }
+        .nav-tabs .nav-link {
+            border: none; color: #666; font-size: 1rem;
+            padding: 10px 20px; font-weight: 500; cursor: pointer;
+        }
+        .nav-tabs .nav-link.active {
+            color: #667eea; background: none;
+            border-bottom: 3px solid #667eea;
+        }
+
+        /* ── Product card ── */
+        .product-card {
+            background: white; margin: 12px 15px;
+            padding: 20px; border-radius: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .product-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 16px;
+            padding-bottom: 12px; border-bottom: 1px solid #f0f0f0;
+        }
+        .product-name  { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; }
+        .product-status-badge {
+            font-size: 12px; font-weight: 600; padding: 4px 12px;
+            border-radius: 20px;
+        }
+        .badge-normal   { background: #e8f5e9; color: #2e7d32; }
+        .badge-finish   { background: #f3e5f5; color: #6a1b9a; }
+        .badge-cancelled{ background: #fce4ec; color: #c62828; }
+
+        .product-info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 9px 0; border-bottom: 1px solid #f8f8f8;
+        }
+        .product-info-row:last-child { border-bottom: none; }
+        .info-label { color: #666; font-size: 0.9rem; }
+        .info-value { color: #1a1a1a; font-weight: 600; font-size: 1rem; }
+        .info-value.amount { color: #667eea; }
+
+        .pending-note {
+            font-size: 11px; color: #aaa; text-align: right;
+            margin: -6px 0 6px 0;
+        }
+
+        .details-btn {
+            background: white; border: 2px solid #e0e0e0; color: #666;
+            border-radius: 50px; padding: 8px 28px; font-weight: 600;
+            cursor: pointer; margin-top: 16px; float: right;
+            transition: all 0.2s;
+        }
+        .details-btn:hover { border-color: #667eea; color: #667eea; }
+
+        /* ── Detail view ── */
+        .detail-view { display: none; }
+        .detail-card {
+            background: white; padding: 22px; margin: 12px 15px;
+            border-radius: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .detail-header {
+            font-size: 1.3rem; font-weight: 700; color: #1a1a1a;
+            margin-bottom: 18px; padding-bottom: 12px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .settlement-section { margin-top: 24px; }
+        .section-title { font-size: 1.1rem; font-weight: 600; color: #1a1a1a; margin-bottom: 12px; }
+        .settlement-record {
+            display: flex; justify-content: space-between;
+            padding: 12px 0; border-bottom: 1px solid #f8f8f8;
+        }
+        .settlement-record:last-child { border-bottom: none; }
+        .record-date   { color: #666; font-size: 0.9rem; }
+        .record-amount { color: #1a1a1a; font-weight: 600; font-size: 0.95rem; }
+        .record-paid   { color: #2e7d32; }
+        .record-unpaid { color: #bbb; font-style: italic; }
+
+        .bottom-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 14px 20px; display: none;
+            justify-content: space-between; align-items: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+        .bottom-bar.visible { display: flex; }
+        .total-income-section { color: white; }
+        .total-income-label  { font-size: 0.8rem; opacity: 0.9; }
+        .total-income-amount { font-size: 1.2rem; font-weight: 700; }
+        .status-btn {
+            background: #4ade80; border: none; color: white;
+            border-radius: 50px; padding: 10px 34px;
+            font-weight: 600; font-size: 1rem; cursor: default;
+        }
+
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: #bbb;
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 12px; display: block; }
+        .empty-state p { font-size: 14px; }
+
+        .loading-spinner {
+            text-align: center; padding: 40px; color: #667eea;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ LIST VIEW ═══ -->
+<div id="listView">
+    <div class="page-header">
+        <button class="back-btn" onclick="history.back()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <h1>My Orders</h1>
+    </div>
+
+    <div class="tabs-container">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" onclick="filterProducts('all', this)">All</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="filterProducts('normal', this)">Active</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="filterProducts('finish', this)">Finished</a>
+            </li>
+        </ul>
+    </div>
+
+    <div id="productList">
+        <div class="loading-spinner">
+            <div class="spinner-border" role="status"></div>
+            <p class="mt-2" style="font-size:13px;">Loading orders…</p>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ DETAIL VIEW ═══ -->
+<div id="detailView" class="detail-view">
+    <div class="page-header">
+        <button class="back-btn" onclick="showListView()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <h1>Order Detail</h1>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-header" id="detailProductName">—</div>
+
+        <div class="product-info-row">
+            <span class="info-label">Total Amount</span>
+            <span class="info-value amount" id="detailPrice">—</span>
+        </div>
+        <div class="product-info-row">
+            <span class="info-label">Duration</span>
+            <span class="info-value" id="detailDays">—</span>
+        </div>
+        <div class="product-info-row">
+            <span class="info-label">Quantity</span>
+            <span class="info-value" id="detailShare">—</span>
+        </div>
+        <div class="product-info-row">
+            <span class="info-label">Daily Income</span>
+            <span class="info-value amount" id="detailDaily">—</span>
+        </div>
+        <div class="product-info-row">
+            <span class="info-label">Income Generated</span>
+            <span class="info-value amount" id="detailGenerated">—</span>
+        </div>
+        <div class="pending-note" id="detailGeneratedNote" style="display:none;">
+            
+        </div>
+        <div class="product-info-row">
+            <span class="info-label">Estimated Total</span>
+            <span class="info-value amount" id="detailEstimate">—</span>
+        </div>
+        <div class="product-info-row">
+            <span class="info-label">Start Date</span>
+            <span class="info-value" id="detailStart">—</span>
+        </div>
+        <div class="product-info-row">
+            <span class="info-label">Status</span>
+            <span class="info-value" id="detailStatus">—</span>
+        </div>
+
+        <div class="settlement-section">
+            <div class="section-title">Settlement Records</div>
+            <div id="settlementRecords">
+                <div class="loading-spinner">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom bar for detail view -->
+<div class="bottom-bar" id="bottomBar">
+    <div class="total-income-section">
+        <div class="total-income-label">Total Income Generated</div>
+        <div class="total-income-amount" id="bottomTotalIncome">UGX 0.00</div>
+    </div>
+    <button class="status-btn" id="bottomStatusBtn">Active</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ── Django passes orders as JSON via template ──────────────────────────
+    const ORDERS_DATA = [
+        {% for order in orders %}
+        {
+            id:             {{ order.id }},
+            order_number:   "{{ order.order_number }}",
+            product_name:   "{{ order.product.name }}",
+            total_amount:   {{ order.total_amount }},
+            daily_income:   {{ order.daily_income }},
+            duration_days:  {{ order.duration_days }},
+            days_completed: {{ order.days_completed }},
+            days_remaining: {{ order.days_remaining }},
+            total_income_generated:  {{ order.total_income_generated }},
+            estimated_total_income:  {{ order.estimated_total_income }},
+            status:         "{{ order.status }}",
+            quantity:       {{ order.quantity }},
+            start_date:     "{{ order.start_date }}",
+            end_date:       "{{ order.end_date }}",
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    let currentFilter = 'all';
+
+    function fmt(n) {
+        return 'UGX ' + parseFloat(n).toLocaleString('en-US', {minimumFractionDigits: 2});
+    }
+
+    function statusBadge(status) {
+        if (status === 'normal')    return '<span class="product-status-badge badge-normal">Active</span>';
+        if (status === 'finish')    return '<span class="product-status-badge badge-finish">Finished</span>';
+        if (status === 'cancelled') return '<span class="product-status-badge badge-cancelled">Cancelled</span>';
+        return `<span class="product-status-badge">${status}</span>`;
+    }
+
+    function filterProducts(filter, el) {
+        currentFilter = filter;
+        document.querySelectorAll('.nav-tabs .nav-link').forEach(a => a.classList.remove('active'));
+        if (el) el.classList.add('active');
+        renderOrders();
+    }
+
+    function renderOrders() {
+        const container = document.getElementById('productList');
+        const list = currentFilter === 'all'
+            ? ORDERS_DATA
+            : ORDERS_DATA.filter(o => o.status === currentFilter);
+
+        if (!list.length) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <p>No orders found in this category.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = list.map(o => `
+            <div class="product-card">
+                <div class="product-header">
+                    <div class="product-name">${o.product_name}</div>
+                    ${statusBadge(o.status)}
+                </div>
+                <div class="product-info-row">
+                    <span class="info-label">Order Number</span>
+                    <span class="info-value" style="font-size:0.85rem;color:#888;">${o.order_number}</span>
+                </div>
+                <div class="product-info-row">
+                    <span class="info-label">Total Amount</span>
+                    <span class="info-value amount">${fmt(o.total_amount)}</span>
+                </div>
+                <div class="product-info-row">
+                    <span class="info-label">Daily Income</span>
+                    <span class="info-value amount">${fmt(o.daily_income)}</span>
+                </div>
+                <div class="product-info-row">
+                    <span class="info-label">Duration</span>
+                    <span class="info-value">${o.duration_days} Days</span>
+                </div>
+                <div class="product-info-row">
+                    <span class="info-label">Progress</span>
+                    <span class="info-value">${o.days_completed} / ${o.duration_days} days</span>
+                </div>
+                <div class="product-info-row">
+                    <span class="info-label">Income Generated</span>
+                    <span class="info-value amount">${fmt(o.total_income_generated)}</span>
+                </div>
+                ${o.status === 'normal' ? `
+                <div class="pending-note">
+                    Credited to balance once all ${o.duration_days} days are complete
+                </div>` : ''}
+                <div style="overflow:hidden;">
+                    <button class="details-btn" onclick="showDetail(${o.id})">
+                        Details <i class="fas fa-chevron-right ms-1"></i>
+                    </button>
+                </div>
+            </div>`
+        ).join('');
+    }
+
+    async function showDetail(orderId) {
+        // Switch view
+        document.getElementById('listView').style.display   = 'none';
+        document.getElementById('detailView').style.display = 'block';
+        document.getElementById('bottomBar').classList.add('visible');
+        document.getElementById('settlementRecords').innerHTML =
+            '<div class="loading-spinner"><div class="spinner-border spinner-border-sm" role="status"></div></div>';
+
+        try {
+            const r    = await fetch(`/users/api/order/${orderId}/detail/`);
+            const data = await r.json();
+            if (!data.success) throw new Error(data.message);
+
+            const o = data.order;
+            document.getElementById('detailProductName').textContent = o.product_name;
+            document.getElementById('detailPrice').textContent       = fmt(o.total_amount);
+            document.getElementById('detailDays').textContent        = `${o.duration_days} Days`;
+            document.getElementById('detailShare').textContent       = `${o.days_completed} / ${o.duration_days} completed`;
+            document.getElementById('detailDaily').textContent       = fmt(o.daily_income);
+            document.getElementById('detailGenerated').textContent   = fmt(o.total_income_generated);
+            document.getElementById('detailEstimate').textContent    = fmt(o.estimated_total_income);
+            document.getElementById('detailStart').textContent       = o.purchase_date.split(' ')[0];
+            document.getElementById('detailStatus').textContent      = o.status === 'normal' ? 'Active' : 'Finished';
+            document.getElementById('bottomTotalIncome').textContent = fmt(o.total_income_generated);
+
+            // Only show the "not yet in your balance" note while the order is active
+            document.getElementById('detailGeneratedNote').style.display =
+                o.status === 'normal' ? 'block' : 'none';
+
+            const btn = document.getElementById('bottomStatusBtn');
+            btn.textContent       = o.status === 'normal' ? 'Active' : 'Finished';
+            btn.style.background  = o.status === 'normal' ? '#4ade80' : '#a78bfa';
+
+            // Settlement records — completed (paid) days vs pending days
+            const sr = document.getElementById('settlementRecords');
+            if (!data.settlements.length) {
+                sr.innerHTML = '<p style="color:#bbb;font-size:13px;text-align:center;padding:20px 0;">No settlement records yet.</p>';
+            } else {
+                sr.innerHTML = data.settlements.map(s => `
+                    <div class="settlement-record">
+                        <span class="record-date">Day ${s.day_number} — ${s.settlement_date}</span>
+                        <span class="record-amount ${s.is_paid ? 'record-paid' : 'record-unpaid'}">
+                            ${fmt(s.amount)} ${s.is_paid ? '✓ Completed' : '(Pending)'}
+                        </span>
+                    </div>`
+                ).join('');
+            }
+
+        } catch (e) {
+            document.getElementById('settlementRecords').innerHTML =
+                `<p style="color:#dc3545;font-size:13px;text-align:center;padding:20px 0;">
+                    Failed to load details. Please try again.
+                </p>`;
+            console.error(e);
+        }
+    }
+
+    function showListView() {
+        document.getElementById('detailView').style.display = 'none';
+        document.getElementById('listView').style.display   = 'block';
+        document.getElementById('bottomBar').classList.remove('visible');
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', renderOrders);
+</script>
+</body>
+</html>
+{% endblock %}

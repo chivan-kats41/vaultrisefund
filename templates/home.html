@@ -1,0 +1,483 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+</head>
+
+<!-- Lottery Dialog -->
+<div id="lottery_dialog" class="dialog-overlay" style="display: none;">
+    <div class="dialog-content">
+        <div class="d-flex align-items-center mb-3">
+            <i class="bi bi-info-circle-fill text-primary fs-4 me-2"></i>
+            <h5 class="mb-0">Kind reminder</h5>
+        </div>
+        <p id="lottery_dialog_text" class="mb-4">You have lottery chances available!</p>
+        <div class="d-flex gap-2">
+            <button class="btn btn-secondary flex-fill"
+                    onclick="document.getElementById('lottery_dialog').style.display='none'">Cancel</button>
+            <a href="/lottery" class="btn btn-primary flex-fill">Go to the lottery</a>
+        </div>
+    </div>
+</div>
+
+<!-- Product Dialog -->
+<div id="product_dialog" class="dialog-overlay" style="display: none;">
+    <div class="dialog-content">
+        <input type="hidden" id="product_id" name="product_id">
+        <div class="d-flex align-items-center mb-3">
+            <div class="product-image me-3" id="dialog_product_image">
+                <span class="material-symbols-outlined">inventory_2</span>
+            </div>
+            <div>
+                <div class="fw-bold" id="dialog_product_name">Product</div>
+                <div class="product-vip mt-1">
+                    <span class="material-symbols-outlined vip-icon">workspace_premium</span>
+                    <span id="dialog_vip_level" class="vip_level">VIP0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ Balance row -->
+        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded"
+             id="dialog_balance_row" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+            <span class="text-muted small">💰 Available Balance</span>
+            <strong id="dialog_balance" style="color:#16a34a;">Loading…</strong>
+        </div>
+
+        <!-- ✅ Blocking warning (insufficient balance OR VIP level too low) -->
+        <div id="dialog_warning" class="alert alert-danger py-2 px-3 small" style="display:none;"></div>
+
+        <div class="border rounded p-3 mb-3">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Each Price</span>
+                <strong id="dialog_price">UGX0</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Revenue</span>
+                <strong id="dialog_days">30 Days</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Daily Income</span>
+                <strong id="dialog_daily_income">UGX0</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Total Income</span>
+                <strong id="dialog_total_income">UGX0</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Max Shares</span>
+                <strong id="dialog_max_shares">—</strong>
+            </div>
+        </div>
+        <div class="border rounded p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-muted">Buy Share</span>
+                <input type="number" id="buy_num" value="1" min="1" step="1" class="form-control w-50">
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">Pay Money</span>
+                <strong id="dialog_pay_money">UGX0</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span class="text-muted">Expected total revenue</span>
+                <strong id="dialog_pay_total">UGX0</strong>
+            </div>
+        </div>
+        <button class="btn btn-primary w-100 py-3 rounded-pill fw-bold" id="invest_now_btn"
+                onclick="submitInvestment()">Invest Now</button>
+
+        <a href="{% url 'recharge' %}" id="recharge_shortcut"
+           class="btn w-100 mt-2 rounded-pill fw-bold"
+           style="display:none;background:#fff7ed;border:1.5px solid #fed7aa;color:#ea580c;">
+            ➕ Top Up Balance
+        </a>
+    </div>
+</div>
+
+<!-- WhatsApp Dialog -->
+<div id="whatsapp_dialog" class="dialog-overlay" style="display: none;">
+    <div class="dialog-content text-center">
+        <i class="bi bi-whatsapp fs-1 text-success mb-3"></i>
+        <h5 class="fw-bold mb-3">Official Information Release</h5>
+        <p class="text-muted mb-4">Follow our official WhatsApp group to get the latest news and welfare information</p>
+        <a href="{{ whatsapp_link|default:'https://chat.whatsapp.com/EhxvFC7VT6KLosE4Yv4ftJ' }}" target="_blank" class="btn btn-success rounded-pill px-4">Follow Now</a>
+    </div>
+</div>
+
+<!-- Header -->
+<div class="index-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar me-3">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="avatar"
+                         style="width:44px;height:44px;border-radius:50%;object-fit:cover;">
+                {% else %}
+                    <span class="material-symbols-outlined">account_circle</span>
+                {% endif %}
+            </div>
+            <div>
+                <!-- ✅ Nickname bold on top, masked phone + registration ID small/muted below -->
+                <div class="fw-bold">{{ nickname }}</div>
+                <div class="text-muted small">
+                    0{{ user.username|slice:"3:5" }}****{{ user.username|slice:"-3:" }}
+                    ID: {{ user.registration_id }}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="index-menu">
+        <div class="mb-3">
+            <div class="small opacity-75">Your Balance</div>
+            <h3 class="fw-bold mb-0">UGX {{ total_balance|floatformat:0 }}</h3>
+        </div>
+        <div class="row g-3">
+            <div class="col-3">
+                <a href="{% url 'recharge' %}" class="menu-item d-block">
+                    <span class="material-symbols-outlined menu-icon">account_balance_wallet</span>
+                    <div class="small">Recharge</div>
+                </a>
+            </div>
+            <div class="col-3">
+                <a href="{% url 'withdraw' %}" class="menu-item d-block">
+                    <span class="material-symbols-outlined menu-icon">payments</span>
+                    <div class="small">Withdraw</div>
+                </a>
+            </div>
+            <div class="col-3">
+                <a href="{% url 'services' %}" class="menu-item d-block">
+                    <span class="material-symbols-outlined menu-icon">support_agent</span>
+                    <div class="small">Service</div>
+                </a>
+            </div>
+            <div class="col-3">
+                <a href="{{ whatsapp_link|default:'https://chat.whatsapp.com/EhxvFC7VT6KLosE4Yv4ftJ' }}" target="_blank" class="menu-item d-block">
+                    <span class="material-symbols-outlined menu-icon">chat</span>
+                    <div class="small">WhatsApp</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="index-main">
+    <div class="common-card">
+        <h4 class="fw-bold mb-3">Quest Rewards</h4>
+        <div class="row g-3 mb-3">
+            <div class="col-6">
+                <div class="invite-card">
+                    <div class="fw-bold mb-2">Inviting friends</div>
+                    <div class="small opacity-75 mb-3">Inviting friends to earn commissions</div>
+                    <a href="/invitation" class="common-a-btn">Go →</a>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="tasks-card">
+                    <div class="fw-bold mb-2">Task reward</div>
+                    <div class="small opacity-75 mb-3">Receive commission for completing tasks</div>
+                    <a href="{% url 'blog' %}" class="common-a-btn">Go →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold mb-0">Hot Products</h4>
+            <a href="{% url 'store' %}" class="text-decoration-none">See All →</a>
+        </div>
+
+        <div id="product_type_1">
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-muted mt-2">Loading products...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<textarea id="copyTxt" class="d-none">https://www.vaultrisefund.cc/?invitation_code=E9A65</textarea>
+
+<!-- ── All scripts at bottom of content block ── -->
+<script>
+// Data injected by Django
+const products   = JSON.parse('{{ products_json|safe }}');
+const categories = JSON.parse('{{ categories_json|safe }}');
+
+// ✅ Balance + VIP state, kept in sync with the store page's logic
+let userBalance      = 0;
+let rechargeBalance  = 0;
+let withdrawalBalance = 0;
+let userVipLevel     = 0;
+
+function csrf() {
+    const v = `; ${document.cookie}`.split('; csrftoken=');
+    return v.length === 2 ? v.pop().split(';').shift() : '';
+}
+
+async function fetchBalance() {
+    try {
+        const r = await fetch('/users/api/user/balance/', {
+            credentials: 'same-origin',
+            headers: { 'X-CSRFToken': csrf() },
+        });
+        if (!r.ok) { console.warn('Balance fetch failed:', r.status); return; }
+        const data = await r.json();
+        if (data.success) {
+            rechargeBalance    = parseFloat(data.recharge_balance)   || 0;
+            withdrawalBalance  = parseFloat(data.withdrawal_balance) || 0;
+            userBalance         = rechargeBalance + withdrawalBalance;
+            userVipLevel        = parseInt(data.vip_level) || 0;
+        }
+    } catch (e) {
+        console.warn('Could not fetch balance:', e);
+    }
+}
+
+function renderProductsByCategory(categoryName, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const filtered = products.filter(
+        p => p.category_name.toLowerCase().trim() === categoryName.toLowerCase().trim()
+    );
+
+    container.innerHTML = '';
+
+    if (filtered.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-info text-center">
+                No products found in "${categoryName}" category.
+            </div>`;
+        return;
+    }
+
+    filtered.forEach(function(product) {
+        var price    = parseFloat(product.price);
+        var daily    = parseFloat(product.daily_income);
+        var total    = parseFloat(product.total_income);
+        var currency = product.currency;
+
+        var imgHtml = product.image
+            ? '<img src="' + product.image + '" alt="' + product.product_name + '" style="width:50px;height:50px;object-fit:cover;border-radius:8px;">'
+            : '<span class="material-symbols-outlined">inventory_2</span>';
+
+        var card = '<div class="product-card mb-3">'
+            + '<div class="d-flex justify-content-between align-items-start mb-3">'
+            +   '<div class="d-flex align-items-center">'
+            +     '<div class="product-image me-2">' + imgHtml + '</div>'
+            +     '<div>'
+            +       '<div class="fw-bold">' + product.product_name + '</div>'
+            +       '<div class="product-vip mt-1">'
+            +         '<span class="material-symbols-outlined vip-icon">workspace_premium</span>'
+            +         '<span class="ms-1">VIP' + product.minimum_vip_level + '</span>'
+            +       '</div>'
+            +     '</div>'
+            +   '</div>'
+            +   '<button class="product-buy-btn" onclick="buyDialog('
+            +     product.id + ','
+            +     '\'' + product.product_name.replace(/'/g, "\\'") + '\','
+            +     '\'' + product.image + '\','
+            +     price + ','
+            +     product.revenue_days + ','
+            +     daily + ','
+            +     total + ','
+            +     product.max_shares + ','
+            +     product.minimum_vip_level + ','
+            +     '\'' + currency + '\''
+            +   ')">Invest Now</button>'
+            + '</div>'
+            + '<div class="product-info d-flex justify-content-between">'
+            +   '<div class="product-item">'
+            +     '<p class="value mb-0">' + currency + ' ' + price.toLocaleString() + '</p>'
+            +     '<p class="label mb-0">Each Price</p>'
+            +   '</div>'
+            +   '<div class="product-item">'
+            +     '<p class="value mb-0">' + product.revenue_days + ' Days</p>'
+            +     '<p class="label mb-0">Revenue</p>'
+            +   '</div>'
+            +   '<div class="product-item">'
+            +     '<p class="value mb-0">' + currency + ' ' + daily.toLocaleString() + '</p>'
+            +     '<p class="label mb-0">Daily Earnings</p>'
+            +   '</div>'
+            +   '<div class="product-item">'
+            +     '<p class="value mb-0">' + currency + ' ' + total.toLocaleString() + '</p>'
+            +     '<p class="label mb-0">Total Revenue</p>'
+            +   '</div>'
+            + '</div>'
+            + '</div>';
+
+        container.innerHTML += card;
+    });
+}
+
+var _price     = 0;
+var _total     = 0;
+var _currency  = 'UGX';
+var _maxShares = 99999;
+var _vipReq    = 0;
+var _productId = null;
+
+async function buyDialog(id, name, image, price, days, daily, total, maxShares, level, currency) {
+    _price     = price;
+    _total     = total;
+    _currency  = currency;
+    _maxShares = maxShares;
+    _vipReq    = level;
+    _productId = id;
+
+    document.getElementById('product_id').value                = id;
+    document.getElementById('dialog_product_name').textContent = name;
+    document.getElementById('dialog_vip_level').textContent    = 'VIP' + level;
+    document.getElementById('dialog_price').textContent        = currency + ' ' + price.toLocaleString();
+    document.getElementById('dialog_days').textContent         = days + ' Days';
+    document.getElementById('dialog_daily_income').textContent = currency + ' ' + daily.toLocaleString();
+    document.getElementById('dialog_total_income').textContent = currency + ' ' + total.toLocaleString();
+    document.getElementById('dialog_max_shares').textContent   = maxShares;
+    document.getElementById('buy_num').value                   = 1;
+    document.getElementById('buy_num').max                     = maxShares;
+    document.getElementById('dialog_pay_money').textContent    = currency + ' ' + price.toLocaleString();
+    document.getElementById('dialog_pay_total').textContent    = currency + ' ' + total.toLocaleString();
+
+    var imgWrap = document.getElementById('dialog_product_image');
+    imgWrap.innerHTML = image
+        ? '<img src="' + image + '" alt="' + name + '" style="width:50px;height:50px;object-fit:cover;border-radius:8px;">'
+        : '<span class="material-symbols-outlined">inventory_2</span>';
+
+    document.getElementById('dialog_balance').textContent = 'Loading…';
+    document.getElementById('dialog_warning').style.display    = 'none';
+    document.getElementById('recharge_shortcut').style.display = 'none';
+
+    document.getElementById('product_dialog').style.display = 'flex';
+
+    // ✅ Get fresh balance + VIP level before evaluating whether Invest Now can proceed
+    await fetchBalance();
+    evaluateInvestState(1);
+}
+
+document.getElementById('buy_num').addEventListener('input', function() {
+    var qty = Math.max(1, Math.min(parseInt(this.value) || 1, _maxShares));
+    this.value = qty;
+    document.getElementById('dialog_pay_money').textContent = _currency + ' ' + (_price * qty).toLocaleString();
+    document.getElementById('dialog_pay_total').textContent = _currency + ' ' + (_total * qty).toLocaleString();
+    evaluateInvestState(qty);
+});
+
+/* ── Decide whether Invest Now is allowed: VIP level first, then balance ── */
+function evaluateInvestState(qty) {
+    const balVal  = document.getElementById('dialog_balance');
+    const warn    = document.getElementById('dialog_warning');
+    const btn     = document.getElementById('invest_now_btn');
+    const rechargeShortcut = document.getElementById('recharge_shortcut');
+
+    balVal.textContent = _currency + ' ' + userBalance.toLocaleString();
+
+    const totalCost  = qty * _price;
+    const vipBlocked = userVipLevel < _vipReq;
+    const balanceOk  = userBalance >= totalCost;
+
+    if (vipBlocked) {
+        balVal.style.color = '#16a34a';
+        warn.style.display = 'block';
+        warn.textContent = `This plan requires VIP Level ${_vipReq}. You are currently VIP ${userVipLevel}. Upgrade your VIP level to invest.`;
+        rechargeShortcut.style.display = 'none';
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.textContent = 'VIP Level Required';
+    } else if (!balanceOk) {
+        balVal.style.color = '#ea580c';
+        warn.style.display = 'block';
+        const shortfall = totalCost - userBalance;
+        warn.textContent = `You need ${_currency} ${shortfall.toLocaleString()} more. Please top up your balance.`;
+        rechargeShortcut.style.display = 'block';
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.textContent = 'Insufficient Balance';
+    } else {
+        balVal.style.color = '#16a34a';
+        warn.style.display = 'none';
+        rechargeShortcut.style.display = 'none';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.textContent = 'Invest Now';
+    }
+}
+
+/* ── Submit investment — wired to the real purchase endpoint ────────────── */
+async function submitInvestment() {
+    if (!_productId) return;
+
+    const qty       = parseInt(document.getElementById('buy_num').value) || 1;
+    const totalCost = qty * _price;
+
+    if (userVipLevel < _vipReq) {
+        alert(`This plan requires VIP Level ${_vipReq}. You are currently VIP ${userVipLevel}.`);
+        return;
+    }
+    if (userBalance < totalCost) {
+        alert('Insufficient balance. Please top up first.');
+        return;
+    }
+
+    const btn = document.getElementById('invest_now_btn');
+    btn.disabled = true;
+    btn.textContent = 'Processing…';
+
+    try {
+        const r = await fetch('/users/api/product/purchase/', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf() },
+            body: JSON.stringify({ product_id: _productId, quantity: qty }),
+        });
+
+        let data;
+        try {
+            data = await r.json();
+        } catch (parseErr) {
+            throw new Error(`Server returned ${r.status} with a non-JSON response`);
+        }
+
+        if (data.success) {
+            document.getElementById('product_dialog').style.display = 'none';
+            alert(`✅ Investment successful! ${qty} share(s) purchased.`);
+            await fetchBalance();
+            window.location.href = "{% url 'my-investments' %}";
+        } else {
+            alert(data.message || 'Investment failed. Please try again.');
+            const msg = (data.message || '').toLowerCase();
+            if (msg.includes('balance') || msg.includes('vip')) {
+                await fetchBalance();
+                evaluateInvestState(qty);
+            }
+        }
+    } catch (e) {
+        console.error('submitInvestment error:', e);
+        alert('Something went wrong. Please check your connection.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Invest Now';
+    }
+}
+
+document.querySelectorAll('.dialog-overlay').forEach(function(overlay) {
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) overlay.style.display = 'none';
+    });
+});
+
+// Render Stable Plan products immediately — no DOMContentLoaded needed
+// since this script is at the bottom of the content block
+renderProductsByCategory('Stable Plan', 'product_type_1');
+
+// ✅ Warm the balance/VIP cache on page load so the first dialog open is instant
+fetchBalance();
+</script>
+
+{% endblock %}

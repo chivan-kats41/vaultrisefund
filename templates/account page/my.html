@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+{% block content%}
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>My Account</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <style>
+        :root {
+            --primary-color: #5274F0;
+            --secondary-color: #FFE9B5;
+            --bg-light: #F5F7F8;
+            --border-color: #F6F6F6;
+        }
+        body {
+            background: var(--bg-light);
+            background-image: url("/public/v2/img/account/bg.png");
+            background-size: 100% auto;
+            background-repeat: no-repeat;
+            padding-bottom: 80px;
+        }
+        .index_header {
+            background: transparent;
+            border-radius: 0 0 20px 20px;
+            padding: 20px;
+            min-height: 100px;
+        }
+        .user_avatar {
+            width: 50px; height: 50px; border-radius: 50%;
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 24px;
+        }
+        .user_info .label { color: #333; font-size: 16px; font-weight: 600; }
+        .user_info .title { color: #666; font-size: 14px; margin-top: 5px; }
+        .setting, .notice {
+            width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            text-decoration: none; transition: transform 0.2s;
+            color: #666; font-size: 18px;
+        }
+        .setting:hover, .notice:hover { transform: scale(1.1); color: var(--primary-color); }
+
+        /* VIP Card */
+        .user_vip_card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px; padding: 20px; margin: 15px;
+            color: white; text-decoration: none; display: block; transition: transform 0.2s;
+        }
+        .user_vip_card:hover { transform: translateY(-3px); }
+        .my_vip { display: flex; align-items: center; margin-bottom: 15px; }
+        .my_vip .vip-icon { font-size: 20px; margin-right: 8px; color: var(--secondary-color); }
+        .my_vip p {
+            font-weight: bold; font-size: 16px; color: var(--secondary-color);
+            border-right: 2px solid var(--secondary-color);
+            padding-right: 10px; margin: 0;
+        }
+        .user_vip_level {
+            background: linear-gradient(270deg, #83848B 0%, #C2C3C3 100%);
+            color: white; border-radius: 4px; padding: 2px 8px;
+            margin-left: 10px; font-size: 14px;
+        }
+        .progress { height: 10px; background: rgba(255,255,255,0.3); margin-top: 10px; }
+        .progress-bar { background: linear-gradient(90deg, #FFD700, #FFA500); }
+        .user_vip_card_right { font-size: 40px; color: var(--secondary-color); }
+
+        /* Recharge / Withdrawal row */
+        .user_balance_card {
+            background: white; border-radius: 15px; padding: 20px; margin: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .user_balance_card a {
+            text-decoration: none; color: #333;
+            display: flex; align-items: center; justify-content: center;
+            transition: color 0.2s;
+        }
+        .user_balance_card a:hover { color: var(--primary-color); }
+        .user_balance_card .balance-icon { font-size: 28px; margin-right: 10px; }
+        .user_balance_card_right { font-size: 15px; font-weight: 500; }
+
+        /* Quick-nav icon grid */
+        .quick-nav {
+            background: white;
+            border-radius: 15px;
+            margin: 0 15px 15px;
+            padding: 18px 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+        }
+        .quick-nav-item {
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            text-decoration: none; color: #333;
+            padding: 6px 4px;
+            transition: opacity 0.2s;
+        }
+        .quick-nav-item:hover { opacity: 0.75; color: var(--primary-color); }
+        .quick-nav-icon {
+            width: 52px; height: 52px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 8px; font-size: 26px;
+        }
+        .qn-orders  { background: #e8eeff; color: #5274F0; }
+        .qn-balance { background: #ede9ff; color: #7c3aed; }
+        .qn-team    { background: #e6faf0; color: #16a34a; }
+        .qn-bank    { background: #fff8e1; color: #d97706; }
+
+        .quick-nav-label {
+            font-size: 12px; font-weight: 500; text-align: center;
+            color: #444; line-height: 1.2;
+        }
+
+        /* Income card */
+        .common_card {
+            background: white; border-radius: 15px; padding: 15px; margin: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .common_item_title { font-size: 16px; font-weight: 600; color: #333; }
+        .common_item_desc  { font-size: 14px; color: #888; }
+        .common_card a { text-decoration: none; color: inherit; }
+        .common_card .label { color: #888; font-size: 13px; text-align: center; }
+        .common_card .value {
+            font-size: 20px; color: var(--primary-color);
+            font-weight: 700; margin-top: 8px; text-align: center;
+        }
+
+        /* Fund entry / More services lists */
+        .user_list { margin: 15px; }
+        .item_title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px; }
+        .user_card {
+            background: white; border-radius: 12px; margin-bottom: 10px;
+            padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .user_card .item { display: flex; align-items: center; justify-content: space-between; }
+        .user_card .item a { display: flex; align-items: center; text-decoration: none; color: #333; flex: 1; }
+        .user_card .item .card-icon { font-size: 24px; margin-right: 12px; color: var(--primary-color); }
+        .user_card .item .title { font-size: 15px; margin: 0; }
+        .user_card .item .right_icon { color: #999; margin: 0; }
+
+        .index_menu {
+            background: white; border-radius: 15px; padding: 15px; margin: 15px;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .index_menu .nav {
+            display: flex; flex-direction: column; align-items: center;
+            text-decoration: none; color: #333; padding: 10px;
+            border-radius: 10px; transition: background 0.2s;
+        }
+        .index_menu .nav:hover { background: #f8f9fa; }
+        .index_menu .nav .menu-icon { font-size: 32px; margin-bottom: 8px; color: var(--primary-color); }
+        .index_menu .nav .title { font-size: 13px; margin: 0; text-align: center; }
+
+        /* Logout */
+        .logout {
+            display: inline-flex; align-items: center; justify-content: center;
+            background: white; color: #dc3545; padding: 12px 40px;
+            border-radius: 8px; text-decoration: none; font-weight: 600;
+            transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .logout:hover { background: #dc3545; color: white; transform: translateY(-2px); }
+
+        /* Blog dialog */
+        #blog_dialog { background: white; border-radius: 15px; padding: 30px; text-align: center; }
+        #blog_dialog .title { font-size: 18px; font-weight: 600; margin-bottom: 15px; }
+        #blog_dialog .text  { font-size: 14px; color: #666; margin-bottom: 20px; }
+        .i_know {
+            background: var(--primary-color); color: white; padding: 10px 30px;
+            border-radius: 8px; cursor: pointer; display: inline-block; transition: background 0.2s;
+        }
+        .i_know:hover { background: #3d5ed1; }
+
+        /* ═══ MOBILE RESPONSIVENESS ═══ */
+        @media (max-width: 576px) {
+            .index_header { padding: 15px; min-height: 90px; }
+            .user_avatar { width: 44px; height: 44px; font-size: 20px; margin-right: 10px; }
+            .user_info .label { font-size: 15px; }
+            .user_info .title { font-size: 12px; }
+            .setting, .notice { width: 32px; height: 32px; font-size: 16px; }
+
+            .user_vip_card { margin: 12px; padding: 16px; }
+            .my_vip p { font-size: 14px; padding-right: 8px; }
+            .user_vip_level { font-size: 12px; padding: 2px 6px; margin-left: 8px; }
+            .user_vip_card_right { font-size: 32px; }
+
+            .user_balance_card { margin: 12px; padding: 15px; }
+            .user_balance_card .balance-icon { font-size: 22px; margin-right: 6px; }
+            .user_balance_card_right { font-size: 13px; }
+
+            .quick-nav { margin: 0 12px 12px; padding: 14px 4px; }
+            .quick-nav-icon { width: 44px; height: 44px; font-size: 22px; margin-bottom: 6px; }
+            .quick-nav-label { font-size: 11px; }
+
+            .common_card { margin: 12px; padding: 12px; }
+            .common_item_title { font-size: 15px; }
+            .common_item_desc { font-size: 13px; }
+            .common_card .value { font-size: 17px; }
+
+            .user_list { margin: 12px; }
+            .item_title { font-size: 15px; }
+            .user_card { padding: 12px; }
+            .user_card .item .card-icon { font-size: 20px; margin-right: 10px; }
+            .user_card .item .title { font-size: 14px; }
+
+            .index_menu { margin: 12px; padding: 12px; gap: 10px; }
+            .index_menu .nav .menu-icon { font-size: 26px; margin-bottom: 6px; }
+            .index_menu .nav .title { font-size: 12px; }
+
+            .logout { padding: 10px 30px; font-size: 14px; }
+        }
+
+        @media (max-width: 360px) {
+            .quick-nav { grid-template-columns: repeat(4, 1fr); padding: 10px 2px; }
+            .quick-nav-icon { width: 38px; height: 38px; font-size: 20px; border-radius: 10px; }
+            .quick-nav-label { font-size: 10px; }
+            .common_card .row.text-center .col-6 { padding: 4px 0; }
+            .user_vip_card_right { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="index_header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <div class="user_avatar">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="avatar"
+                         style="width:50px;height:50px;border-radius:50%;object-fit:cover;">
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="user_info">
+                <!-- ✅ Nickname bold on top, masked phone + registration ID small/muted below -->
+                <div class="label">{{ nickname }}</div>
+                <div class="title">
+                    0{{ username|slice:"3:5" }}****{{ username|slice:"-3:" }}
+                    ID: {{ user.registration_id }}
+                </div>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'info' %}" class="setting"><i class="fas fa-cog"></i></a>
+            <a href="{% url 'mail' %}" class="notice"><i class="fas fa-bell"></i></a>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="user_main">
+
+    <!-- VIP Card -->
+    <a href="{% url 'vip' %}" class="user_vip_card">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="flex-grow-1">
+                <div class="my_vip">
+                    <i class="fas fa-crown vip-icon"></i>
+                    <p>VIP LEVEL</p>
+                    <div class="user_vip_level">VIP {{ profile.vip_level|default:"0" }}</div>
+                </div>
+                <div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar"
+                             style="width: {{ vip_progress|floatformat:0 }}%"
+                             aria-valuenow="{{ vip_progress }}"
+                             aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div style="margin-top:8px;font-size:13px;">
+                        {% if next_vip %}
+                            Progress: UGX {{ profile.total_investment|floatformat:2 }}
+                            / UGX {{ next_vip.required_investment|floatformat:2 }}
+                        {% else %}
+                            Maximum VIP Level Reached!
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="user_vip_card_right"><i class="fas fa-medal"></i></div>
+        </div>
+    </a>
+
+    <!-- Recharge / Withdrawal row -->
+    <div class="user_balance_card d-flex">
+        <a href="{% url 'recharge' %}" class="flex-fill" style="border-right:2px solid var(--bg-light);">
+            <i class="fas fa-wallet balance-icon"></i>
+            <div class="user_balance_card_right">Recharge <i class="fas fa-chevron-right"></i></div>
+        </a>
+        <a href="{% url 'withdraw' %}" class="flex-fill">
+            <i class="fas fa-money-bill-wave balance-icon"></i>
+            <div class="user_balance_card_right">Withdrawal <i class="fas fa-chevron-right"></i></div>
+        </a>
+    </div>
+
+    <!-- Quick-nav grid: My Orders / My Balance / My Team / Bank Card -->
+    <div class="quick-nav">
+        <a href="{% url 'orders' %}" class="quick-nav-item">
+            <div class="quick-nav-icon qn-orders">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <span class="quick-nav-label">My Orders</span>
+        </a>
+        <a href="{% url 'balance' %}" class="quick-nav-item">
+            <div class="quick-nav-icon qn-balance">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <span class="quick-nav-label">My Balance</span>
+        </a>
+
+        {# ✅ FIX: was 'invitation' — correct name from invitation/urls.py is 'team' #}
+        <a href="{% url 'team' %}" class="quick-nav-item">
+            <div class="quick-nav-icon qn-team">
+                <i class="fas fa-users"></i>
+            </div>
+            <span class="quick-nav-label">My Team</span>
+        </a>
+
+        <a href="{% url 'bankCardInfo' %}" class="quick-nav-item">
+            <div class="quick-nav-icon qn-bank">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <span class="quick-nav-label">Bank Card</span>
+        </a>
+    </div>
+
+    <!-- Income Card -->
+    <div class="common_card">
+        <div style="border-bottom:1px solid var(--border-color);padding:10px 0;">
+            <a href="{% url 'rewards' %}" class="d-flex justify-content-between align-items-center">
+                <div class="common_item_title">My Income</div>
+                <div class="common_item_desc">Income Details ></div>
+            </a>
+        </div>
+        <div class="row text-center" style="border-bottom:1px solid var(--border-color);padding:15px 0;">
+            <div class="col-6">
+                <div class="label">Recharge Balance</div>
+                <div class="value">{{ recharge_balance|floatformat:2 }}</div>
+            </div>
+            <div class="col-6">
+                <div class="label">Withdrawal Balance</div>
+                <div class="value">{{ withdrawal_balance|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="row text-center" style="padding:15px 0;">
+            <div class="col-6">
+                <div class="label">Commission</div>
+                <div class="value">{{ commission_balance|floatformat:2 }}</div>
+            </div>
+            <div class="col-6">
+                <div class="label">Order Num</div>
+                <div class="value">{{ total_orders }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fund Entry -->
+    <div class="user_list">
+        <div style="padding:10px;"><div class="item_title">Fund entry</div></div>
+        <div class="user_card">
+            <div class="item">
+                <a href="{% url 'balance' %}">
+                    <i class="fas fa-arrow-circle-down card-icon"></i>
+                    <p class="title">Withdraw Record</p>
+                </a>
+                <p class="right_icon"><i class="fas fa-chevron-right"></i></p>
+            </div>
+        </div>
+        <div class="user_card">
+            <div class="item">
+                <a href="{% url 'balance' %}">
+                    <i class="fas fa-arrow-circle-up card-icon"></i>
+                    <p class="title">Recharge Record</p>
+                </a>
+                <p class="right_icon"><i class="fas fa-chevron-right"></i></p>
+            </div>
+        </div>
+        <div class="user_card">
+            <div class="item">
+                <a href="{% url 'rewards' %}">
+                    <i class="fas fa-gift card-icon"></i>
+                    <p class="title">Reward Records</p>
+                </a>
+                <p class="right_icon"><i class="fas fa-chevron-right"></i></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Services -->
+    <div class="user_list">
+        <div style="padding:10px;"><div class="item_title">More services</div></div>
+        <div class="index_menu" style="margin:0;grid-template-columns:repeat(3,1fr);">
+            <a href="{% url 'vip' %}" class="nav">
+                <i class="fas fa-crown menu-icon"></i><p class="title">Vip</p>
+            </a>
+            <a href="{% url 'services' %}" class="nav">
+                <i class="fas fa-question-circle menu-icon"></i><p class="title">Help Center</p>
+            </a>
+            <a href="{% url 'about' %}" class="nav">
+                <i class="fas fa-info-circle menu-icon"></i><p class="title">About Us</p>
+            </a>
+        </div>
+        <div class="index_menu" style="margin:10px 0 0 0;grid-template-columns:1fr;">
+            <a href="{% url 'info' %}" class="nav">
+                <i class="fas fa-cog menu-icon"></i><p class="title">Setting</p>
+            </a>
+        </div>
+    </div>
+
+    <!-- Logout -->
+    <div class="user_list" style="padding:15px;text-align:center;">
+        <a href="/logout" class="logout">
+            <i class="fas fa-sign-out-alt me-2"></i> Logout
+        </a>
+    </div>
+</div>
+
+<!-- Blog Dialog Modal -->
+<div class="modal fade" id="blogModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body" id="blog_dialog">
+                <p class="title"></p>
+                <p class="text"></p>
+                <div class="i_know" data-bs-dismiss="modal" id="close">I Know</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'includes/footer.html' %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/users/api/notifications/?unread_only=true')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success || !data.unread_count) return;
+            var bell = document.querySelector('.notice');
+            if (!bell) return;
+            var badge = document.createElement('span');
+            badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger';
+            badge.style.fontSize = '10px';
+            bell.style.position = 'relative';
+            badge.textContent = data.unread_count > 99 ? '99+' : data.unread_count;
+            bell.appendChild(badge);
+        })
+        .catch(function() {});
+});
+</script>
+
+</body>
+</html>
+{%endblock%}

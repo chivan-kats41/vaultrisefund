@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Vaultrise Fund   -    Invitation</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons (for share buttons) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <style>
+        :root {
+            --primary-color: #5072EE;
+            --secondary-color: #FFD700;
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* ── Header ── */
+        .common_header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .common_header .back {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .common_header .btn {
+            width: 35px;
+            height: 35px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+
+        /* ── Loading Spinner ── */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+        }
+
+        /* ── Error Message ── */
+        .error-message {
+            background: rgba(244, 67, 54, 0.9);
+            color: white;
+            padding: 15px;
+            margin: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* ── Commission Card ── */
+        .commission_card {
+            padding: 20px;
+            margin: 15px;
+        }
+        .commission_card .label {
+            color: #DEEFFF;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .commission_card .value {
+            font-weight: 700;
+            font-size: 28px;
+            color: #FFFFFF;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .commission_card .invite_code_label {
+            color: rgba(255,255,255,0.75);
+            font-size: 13px;
+            margin-top: 6px;
+        }
+        .commission_card .invite_code_label strong {
+            color: #fff;
+            font-size: 15px;
+            letter-spacing: 1px;
+        }
+
+        /* ── Invite Link Card ── */
+        .invite_link_card {
+            background: white;
+            border-radius: 15px;
+            padding: 18px;
+            margin: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .invite_link_card .card_title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .invite_link_input_row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .invite_link_input_row input {
+            flex: 1;
+            border: 1.5px solid #e0e6ff;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: var(--primary-color);
+            background: #f5f7ff;
+            outline: none;
+        }
+        .copy_btn {
+            background: var(--primary-color);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border: none;
+            font-size: 14px;
+        }
+        .copy_btn:hover { background: #3d5ed1; transform: translateY(-2px); }
+        .copy_btn.success { background: #28a745; }
+
+        /* QR Code block */
+        .qr_wrapper {
+            text-align: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #f0f0f0;
+        }
+        #qrcode {
+            display: inline-block;
+            padding: 10px;
+            background: white;
+            border: 1.5px solid #e0e6ff;
+            border-radius: 12px;
+        }
+        #qrcode img, #qrcode canvas { display: block; }
+        .qr_label {
+            color: #888;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        /* ── Share Buttons Card ── */
+        .share_card {
+            background: white;
+            border-radius: 15px;
+            padding: 18px;
+            margin: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .share_card .card_title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .share_buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .share_btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .share_btn:hover { opacity: 0.88; transform: translateY(-2px); }
+        .share_btn.whatsapp { background: #25D366; color: white; }
+        .share_btn.telegram { background: #229ED9; color: white; }
+        .share_btn.copy_link { background: #f0f3ff; color: var(--primary-color); border: 1.5px solid #d0d8ff; }
+
+        /* ── Common Card ── */
+        .common_card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        /* ── Team Level Card ── */
+        .team_level_card { margin-top: 10px; }
+        .team_level_header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .team_level_title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+        .team_level_details {
+            color: var(--primary-color);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .team_level_item_card {
+            background: linear-gradient(88deg, #E8F5FF 0%, #D5E8FF 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        .team_level_item_card.level2 { background: linear-gradient(88deg, #EAEEF7 0%, #D1D8F2 100%); }
+        .team_level_item_card.level3 { background: linear-gradient(88deg, #F4D5D4 0%, #F5C1B4 100%); }
+        .team_level_top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .team_level_top_left {
+            background: linear-gradient(135deg, #4A90E2, #357ABD);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .team_level_img { font-size: 50px; }
+        .team_level_item_list {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        .team_level_item { flex: 1; text-align: center; }
+        .team_level_item .team_level_title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .team_level_item .team_level_details {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* ── How Commissions Work Card ── */
+        .commission_info_card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .commission_info_card .card_title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .commission_info_card .card_title i { color: var(--primary-color); }
+        .commission_step {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .commission_step:last-child { margin-bottom: 0; }
+        .step_badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            flex-shrink: 0;
+        }
+        .step_badge.s1 { background: #F5A623; }
+        .step_badge.s2 { background: var(--primary-color); }
+        .step_badge.s3 { background: #e91e8c; }
+        .commission_step .step_text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .commission_step .step_text strong { color: #333; }
+
+        /* ── Tasks Reward Text Card ── */
+        .tasks_reward_text_card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+        .tasks_reward_text {
+            color: #333;
+            font-size: 14px;
+            line-height: 1.8;
+            text-align: justify;
+        }
+
+        /* ── Hidden copy textarea ── */
+        #copyTxt {
+            position: absolute;
+            left: -9999px;
+            opacity: 0;
+        }
+
+        /* ── Footer ── */
+        .footer-menu {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            border-radius: 20px 20px 0 0;
+            z-index: 1000;
+        }
+        .footer-menu .nav-link { color: #6b7280; text-align: center; padding: 10px; }
+        .footer-menu .nav-link.active { color: var(--primary-color); }
+        .footer-menu .invite-center { position: relative; margin-top: -30px; }
+        .footer-menu .invite-center .material-symbols-outlined {
+            font-size: 60px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 50%;
+            padding: 10px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="common_header">
+    <a href="javascript:history.back(-1)" class="back">
+        <p class="btn mb-0"><i class="fas fa-chevron-left"></i></p>
+        Invitation
+    </a>
+</div>
+
+<!-- Error Message -->
+<div class="error-message" id="errorMessage"></div>
+
+<!-- Loading Spinner -->
+<div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<!-- Main Content (hidden until API loads) -->
+<div id="mainContent" style="display:none;">
+
+    <!-- Commission Card -->
+    <div class="commission_card" id="invite_friends_card">
+        <div class="label">Commission Earned</div>
+        <div class="value commission_amount">UGX 0.00</div>
+        <div class="invite_code_label">
+            Invite Code: <strong id="invite_code_display">--</strong>
+        </div>
+    </div>
+
+    <!-- Invite Link Card (input + QR) -->
+    <div class="invite_link_card">
+        <div class="card_title"><i class="fas fa-link me-2" style="color:var(--primary-color);"></i>Your Invite Link</div>
+        <div class="invite_link_input_row">
+            <input type="text" id="invite_link_input" readonly placeholder="Loading...">
+            <button class="copy_btn" id="copyBtn" onclick="copyLink()">
+                <i class="bi bi-copy me-1"></i>Copy
+            </button>
+        </div>
+        <!-- QR Code -->
+        <div class="qr_wrapper">
+            <div id="qrcode"></div>
+            <div class="qr_label">Scan to register with your invite link</div>
+        </div>
+    </div>
+
+    <!-- Share Buttons Card -->
+    <div class="share_card">
+        <div class="card_title"><i class="fas fa-share-alt me-2" style="color:var(--primary-color);"></i>Share via</div>
+        <div class="share_buttons">
+            <a id="whatsapp_share" href="#" target="_blank" class="share_btn whatsapp">
+                <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+            <a id="telegram_share" href="#" target="_blank" class="share_btn telegram">
+                <i class="bi bi-telegram"></i> Telegram
+            </a>
+            <button onclick="copyLink()" class="share_btn copy_link">
+                <i class="bi bi-link-45deg"></i> Copy Link
+            </button>
+        </div>
+    </div>
+
+    <!-- Team Level Card -->
+    <div class="common_card">
+        <div class="team_level_card" id="team_level_card">
+            <div class="team_level_header">
+                <a href="/invitation/teamMembers?level=1" class="d-flex justify-content-between align-items-center w-100 text-decoration-none">
+                    <div class="team_level_title">Team Level</div>
+                    <div class="team_level_details">Team Details ></div>
+                </a>
+            </div>
+
+            <!-- Level 1 -->
+            <div class="team_level_item_card">
+                <div class="team_level_top">
+                    <div class="team_level_top_left">Level 1</div>
+                    <div class="team_level_img">🥉</div>
+                </div>
+                <div class="team_level_item_list">
+                    <div class="team_level_item">
+                        <div class="team_level_title yield_level_1">--%</div>
+                        <div class="team_level_details">Lv 1 Rebate</div>
+                    </div>
+                    <div class="team_level_item">
+                        <div class="team_level_title invitation_sum_1">--</div>
+                        <div class="team_level_details">Total invite</div>
+                    </div>
+                    <div class="team_level_item">
+                        <div class="team_level_title invitation_active_1">--</div>
+                        <div class="team_level_details">Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level 2 -->
+            <div class="team_level_item_card level2">
+                <div class="team_level_top">
+                    <div class="team_level_top_left level2">Level 2</div>
+                    <div class="team_level_img">🥈</div>
+                </div>
+                <div class="team_level_item_list">
+                    <div class="team_level_item">
+                        <div class="team_level_title yield_level_2">--%</div>
+                        <div class="team_level_details">Lv 2 Rebate</div>
+                    </div>
+                    <div class="team_level_item">
+                        <div class="team_level_title invitation_sum_2">--</div>
+                        <div class="team_level_details">Total invite</div>
+                    </div>
+                    <div class="team_level_item">
+                        <div class="team_level_title invitation_active_2">--</div>
+                        <div class="team_level_details">Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Level 3 -->
+            <div class="team_level_item_card level3">
+                <div class="team_level_top">
+                    <div class="team_level_top_left level3">Level 3</div>
+                    <div class="team_level_img">🥇</div>
+                </div>
+                <div class="team_level_item_list">
+                    <div class="team_level_item">
+                        <div class="team_level_title yield_level_3">--%</div>
+                        <div class="team_level_details">Lv 3 Rebate</div>
+                    </div>
+                    <div class="team_level_item">
+                        <div class="team_level_title invitation_sum_3">--</div>
+                        <div class="team_level_details">Total invite</div>
+                    </div>
+                    <div class="team_level_item">
+                        <div class="team_level_title invitation_active_3">--</div>
+                        <div class="team_level_details">Active</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How Commissions Work -->
+    <div class="commission_info_card">
+        <div class="card_title">
+            <i class="fas fa-info-circle"></i> How Commissions Work
+        </div>
+        <div class="commission_step">
+            <div class="step_badge s1">1</div>
+            <div class="step_text">
+                Share your invite link. When someone registers and invests, you earn
+                <strong id="rebate_l1_info">--</strong> of their investment amount instantly.
+            </div>
+        </div>
+        <div class="commission_step">
+            <div class="step_badge s2">2</div>
+            <div class="step_text">
+                When your Level 1 referrals invite others, you earn
+                <strong id="rebate_l2_info">--</strong> of those investments (Level 2).
+            </div>
+        </div>
+        <div class="commission_step">
+            <div class="step_badge s3">3</div>
+            <div class="step_text">
+                Level 3 referrals earn you
+                <strong id="rebate_l3_info">--</strong> commission on their investments.
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Reward Text -->
+    <div class="tasks_reward_text_card">
+        <div class="tasks_reward_text">
+            The more members you invite, the more rewards you will get. Commission is credited
+            instantly to your wallet every time a referred member makes an investment.
+        </div>
+    </div>
+
+</div><!-- /mainContent -->
+
+<!-- Hidden textarea for copy fallback -->
+<textarea id="copyTxt" readonly></textarea>
+
+<!-- Footer Menu -->
+{% include 'includes/footer.html' %}
+
+<!-- Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<!-- QRCode.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+// ── Config ──────────────────────────────────────────────
+const API_BASE_URL = '/invitation/api';
+let invitationData = null;
+let qrInstance    = null;   // holds the QRCode object so we can update it
+
+// ── Loading / Error helpers ──────────────────────────────
+function showLoading(show = true) {
+    document.getElementById('loadingSpinner').style.display = show ? 'flex'  : 'none';
+    document.getElementById('mainContent').style.display    = show ? 'none'  : 'block';
+}
+
+function showError(message) {
+    const el = document.getElementById('errorMessage');
+    el.textContent    = message;
+    el.style.display  = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 5000);
+}
+
+// ── Fetch ────────────────────────────────────────────────
+async function fetchTeamData() {
+    showLoading(true);
+    try {
+        const response = await fetch(`${API_BASE_URL}/stats/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const data = await response.json();
+        invitationData = data;
+        loadTeamData(data);
+        showLoading(false);
+
+    } catch (error) {
+        console.error('Error loading team data:', error);
+        showError('Failed to load invitation data. Please refresh the page.');
+        showLoading(false);
+    }
+}
+
+// ── Render ───────────────────────────────────────────────
+function loadTeamData(data) {
+    try {
+        // Commission amount
+        const commissionText = `${data.currency} ${parseFloat(data.commission).toLocaleString('en-US', {
+            minimumFractionDigits: 2, maximumFractionDigits: 2
+        })}`;
+        document.querySelector('.commission_amount').textContent = commissionText;
+
+        // Invite code (API should return data.invite_code)
+        if (data.invite_code) {
+            document.getElementById('invite_code_display').textContent = data.invite_code;
+        }
+
+        // Invite link input + QR
+        const link = data.promotion_link || '';
+        document.getElementById('invite_link_input').value = link;
+        generateQR(link);
+
+        // WhatsApp / Telegram share URLs (updated dynamically)
+        const encoded = encodeURIComponent(link);
+        const inviteCode = data.invite_code || '';
+        document.getElementById('whatsapp_share').href =
+            `https://wa.me/+256769107733?text=Join%20and%20earn%20daily%20returns!%20Use%20my%20code%3A%20${encodeURIComponent(inviteCode)}%20${encoded}`;
+        document.getElementById('telegram_share').href =
+            `https://t.me/share/url?url=${encoded}&text=Join%20and%20earn%20daily%20investment%20returns!`;
+
+        // Level stats
+        document.querySelector('.yield_level_1').textContent      = data.yield_level_1 + '%';
+        document.querySelector('.invitation_sum_1').textContent    = data.invitation_sum_1;
+        document.querySelector('.invitation_active_1').textContent = data.invitation_active_1;
+
+        document.querySelector('.yield_level_2').textContent      = data.yield_level_2 + '%';
+        document.querySelector('.invitation_sum_2').textContent    = data.invitation_sum_2;
+        document.querySelector('.invitation_active_2').textContent = data.invitation_active_2;
+
+        document.querySelector('.yield_level_3').textContent      = data.yield_level_3 + '%';
+        document.querySelector('.invitation_sum_3').textContent    = data.invitation_sum_3;
+        document.querySelector('.invitation_active_3').textContent = data.invitation_active_3;
+
+        // "How it works" rebate labels (use API values so they stay in sync)
+        document.getElementById('rebate_l1_info').textContent = data.yield_level_1 + '%';
+        document.getElementById('rebate_l2_info').textContent = data.yield_level_2 + '%';
+        document.getElementById('rebate_l3_info').textContent = data.yield_level_3 + '%';
+
+    } catch (error) {
+        console.error('Error rendering team data:', error);
+        showError('Error displaying data. Please refresh the page.');
+    }
+}
+
+// ── QR Code ──────────────────────────────────────────────
+function generateQR(link) {
+    const container = document.getElementById('qrcode');
+    if (!link) return;
+
+    // Clear previous QR if any
+    container.innerHTML = '';
+    qrInstance = new QRCode(container, {
+        text:         link,
+        width:        150,
+        height:       150,
+        colorDark:    '#5072EE',
+        colorLight:   '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+    });
+}
+
+// ── Copy link ────────────────────────────────────────────
+async function copyLink() {
+    const input   = document.getElementById('invite_link_input');
+    const copyBtn = document.getElementById('copyBtn');
+    const link    = input.value;
+
+    if (!link || link === '') return;
+
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(link);
+            showCopySuccess(copyBtn);
+        } else {
+            copyLinkFallback(link, copyBtn);
+        }
+    } catch (err) {
+        copyLinkFallback(link, copyBtn);
+    }
+}
+
+function copyLinkFallback(link, copyBtn) {
+    const ta = document.getElementById('copyTxt');
+    ta.value = link;
+    ta.select();
+    ta.setSelectionRange(0, 99999);
+    try {
+        document.execCommand('copy');
+        showCopySuccess(copyBtn);
+    } catch (err) {
+        showError('Failed to copy link. Please copy manually.');
+    }
+}
+
+function showCopySuccess(button) {
+    const orig = button.innerHTML;
+    button.innerHTML = '<i class="bi bi-check-lg me-1"></i>Copied!';
+    button.classList.add('success');
+    setTimeout(() => {
+        button.innerHTML = orig;
+        button.classList.remove('success');
+    }, 2000);
+}
+
+// ── Init ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    fetchTeamData();
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && invitationData) {
+        fetchTeamData();
+    }
+});
+</script>
+
+</body>
+</html>

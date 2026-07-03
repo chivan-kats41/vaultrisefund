@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Level</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .header {
+            background-color: #000;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+        .header-url {
+            font-size: 12px;
+            color: #999;
+            margin: 0;
+        }
+        .top-section {
+            position: relative;
+            padding: 30px 20px;
+        }
+        .page-title {
+            color: white;
+            text-align: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+        }
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 28px;
+            padding: 0;
+            cursor: pointer;
+        }
+        .vip-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 15px 30px;
+        }
+        .vip-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .vip-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .vip-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        .vip-v0 { background-color: #e0e0e0; color: #757575; }
+        .vip-v1 { background-color: #e3f2fd; color: #1976d2; }
+        .vip-v2 { background-color: #b3e5fc; color: #0288d1; }
+        .vip-v3 { background-color: #fff9c4; color: #f57f17; }
+        .vip-v4 { background-color: #e1bee7; color: #7b1fa2; }
+        .vip-v5 { background-color: #c8e6c9; color: #388e3c; }
+        .vip-v6 { background-color: #ffccbc; color: #d84315; }
+        .vip-v7 { background-color: #f8bbd0; color: #c2185b; }
+        .vip-v8 { background-color: #b2dfdb; color: #00695c; }
+        .vip-content {
+            flex-grow: 1;
+        }
+        .vip-text {
+            color: #333;
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        .vip-amount {
+            color: #000;
+            font-size: 17px;
+            font-weight: bold;
+        }
+        .back-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 24px;
+        }
+        .menu-btn {
+            background: #4caf50;
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-section">
+        <button class="back-btn" onclick="window.history.back()"><i class="fas fa-chevron-left"></i></button>
+        <h1 class="page-title">Vip Level</h1>
+    </div>
+
+    <div class="vip-container">
+        <div class="vip-card">
+            <div class="vip-icon vip-v0">V<sub>0</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX0.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v1">V<sub>1</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX15000.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v2">V<sub>2</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX250000.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v3">V<sub>3</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX700000.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v4">V<sub>4</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX3000000.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v5">V<sub>5</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX8000000.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v6">V<sub>6</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX20000000.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v7">V<sub>7</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX60000000.00</div>
+            </div>
+        </div>
+
+        <div class="vip-card">
+            <div class="vip-icon vip-v8">V<sub>8</sub></div>
+            <div class="vip-content">
+                <div class="vip-text">This level of VIP requires a total investment amount of</div>
+                <div class="vip-amount">UGX100000000.00</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

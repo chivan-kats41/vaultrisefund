@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Card Info</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(180deg, #5C7CFA 0%, #4263EB 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .page-header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        
+        .back-btn:hover {
+            opacity: 0.8;
+        }
+        
+        .content-wrapper {
+            padding: 20px 15px 30px 15px;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .form-label {
+            color: #1a1a1a;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 1rem;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .form-control::placeholder {
+            color: #999;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 1.1rem;
+        }
+        
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .input-wrapper .form-control,
+        .input-wrapper .form-select {
+            padding-left: 45px;
+            margin-bottom: 0;
+        }
+        
+        .edit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 16px;
+            width: 100%;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            margin-top: 10px;
+        }
+        
+        .edit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+        
+        .edit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .edit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .explain-section {
+            margin-top: 30px;
+        }
+        
+        .explain-title {
+            color: #667eea;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+        
+        .explain-text {
+            color: #1a1a1a;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        .password-toggle:hover {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <button class="back-btn" onclick="goBack()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <h1 id="pageTitle">Bank Card Info</h1>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="form-card">
+            <!-- Wallet Selection -->
+            <div class="mb-3">
+                <label class="form-label">Wallet</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-wallet input-icon"></i>
+                    <select class="form-select" id="walletType">
+                        <option value="">Select Wallet</option>
+                        <option value="MTN">MTN</option>
+                        <option value="Airtel">Airtel</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Wallet Owner Name -->
+            <div class="mb-3">
+                <label class="form-label">Wallet Owner Name</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-user input-icon"></i>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="ownerName" 
+                        value=""
+                        placeholder="Enter wallet owner name">
+                </div>
+            </div>
+
+            <!-- Wallet Account -->
+            <div class="mb-3">
+                <label class="form-label">Wallet Account</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-credit-card input-icon"></i>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="walletAccount" 
+                        value=""
+                        placeholder="Enter wallet account number">
+                </div>
+            </div>
+
+            <!-- USDT TRC-20 -->
+            <div class="mb-3">
+                <label class="form-label">USDT TRC-20</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-dollar-sign input-icon"></i>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="usdtWallet" 
+                        placeholder="USDT Wallet"
+                        value="">
+                </div>
+            </div>
+
+            <!-- Transaction Password -->
+            <div class="mb-3">
+                <label class="form-label">Transaction password</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="transactionPassword" 
+                        placeholder="Trade Password">
+                    <button class="password-toggle" type="button" onclick="togglePassword()">
+                        <i class="fas fa-eye" id="passwordIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button class="edit-btn" id="submitBtn" onclick="submitWalletAccount()">
+                <span id="btnText">Add Bank Card</span>
+            </button>
+
+            <!-- Explain Section -->
+            <div class="explain-section">
+                <div class="explain-title">Explain</div>
+                <div class="explain-text">
+                    1. Only one wallet account can be added for withdrawal.
+                </div>
+                <div class="explain-text">
+                    2. Please make sure that the wallet account information and USDT TRC-20 address you enter are correct, otherwise the withdrawal operation will not be successfully completed.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 70px; margin-bottom: 20px;"></i>
+                    <h5 class="mb-3" id="modalTitle">Success!</h5>
+                    <p class="text-muted mb-4" id="modalMessage">Your wallet information has been successfully saved.</p>
+                    <button class="btn btn-success px-4" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+       // Get CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Check for existing wallet on page load
+let hasExistingWallet = false;
+
+window.addEventListener('DOMContentLoaded', async function() {
+    await checkExistingWallet();
+});
+
+async function checkExistingWallet() {
+    try {
+        const response = await fetch('/users/api/wallet/get/', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            
+            if (data.success && data.wallet_account) {
+                // User has existing wallet - populate fields
+                hasExistingWallet = true;
+                populateWalletData(data);
+                setEditMode();
+            } else {
+                // New user - keep in add mode
+                hasExistingWallet = false;
+                setAddMode();
+            }
+        } else {
+            // If API call fails, default to add mode
+            setAddMode();
+        }
+    } catch (error) {
+        console.error('Error checking wallet:', error);
+        setAddMode();
+    }
+}
+
+function populateWalletData(data) {
+    if (data.wallet_type) {
+        document.getElementById('walletType').value = data.wallet_type;
+    }
+    if (data.owner_name) {
+        document.getElementById('ownerName').value = data.owner_name;
+    }
+    if (data.wallet_account) {
+        document.getElementById('walletAccount').value = data.wallet_account;
+    }
+    if (data.usdt_wallet) {
+        document.getElementById('usdtWallet').value = data.usdt_wallet;
+    }
+}
+
+function setEditMode() {
+    document.getElementById('pageTitle').textContent = 'Edit Bank Card';
+    document.getElementById('btnText').textContent = 'Update Wallet Account';
+}
+
+function setAddMode() {
+    document.getElementById('pageTitle').textContent = 'Add Bank Card';
+    document.getElementById('btnText').textContent = 'Add Bank Card';
+}
+
+async function submitWalletAccount() {
+    const walletType = document.getElementById('walletType').value;
+    const ownerName = document.getElementById('ownerName').value.trim();
+    const walletAccount = document.getElementById('walletAccount').value.trim();
+    const usdtWallet = document.getElementById('usdtWallet').value.trim();
+    const transactionPassword = document.getElementById('transactionPassword').value;
+
+    // Validation (keep your existing validation)
+    if (!walletType) {
+        alert('Please select a wallet type');
+        return;
+    }
+    // ... rest of validation
+
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    submitBtn.disabled = true;
+    btnText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+    try {
+        // Determine endpoint based on mode
+        const endpoint = hasExistingWallet ? '/users/api/wallet/update/' : '/users/api/wallet/add/';
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                wallet_type: walletType,
+                owner_name: ownerName,
+                wallet_account: walletAccount,
+                usdt_wallet: usdtWallet,
+                transaction_password: transactionPassword
+            })
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update mode after successful add
+            if (!hasExistingWallet) {
+                hasExistingWallet = true;
+                setEditMode();
+            }
+            
+            // Update modal message
+            document.getElementById('modalTitle').textContent = hasExistingWallet ? 'Updated Successfully!' : 'Added Successfully!';
+            document.getElementById('modalMessage').textContent = data.message;
+            
+            // Show success modal
+            const modal = new bootstrap.Modal(document.getElementById('successModal'));
+            modal.show();
+
+            // Clear password field
+            document.getElementById('transactionPassword').value = '';
+        } else {
+            alert(data.message);
+        }
+    } catch (error) {
+        alert('An error occurred: ' + error.message);
+    } finally {
+        submitBtn.disabled = false;
+        btnText.textContent = hasExistingWallet ? 'Update Wallet Account' : 'Add Bank Card';
+    }
+}
+    </script>
+</body>
+</html>

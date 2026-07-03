@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaultrise Fund - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color:#f8f9fa; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif; }
+        .login-container { max-width:500px; margin:50px auto; padding:0 20px; }
+        .logo-container { text-align:center; margin-bottom:30px; }
+        .eagle-logo { width:80px; height:60px; margin-bottom:20px; }
+        .company-name { font-size:28px; font-weight:bold; color:#000; letter-spacing:2px; }
+        .welcome-title { font-size:32px; font-weight:600; color:#212529; margin-bottom:10px; }
+        .subtitle { color:#6c757d; font-size:16px; margin-bottom:40px; }
+        .form-label { color:#212529; font-weight:500; margin-bottom:8px; }
+        .form-control { border:1px solid #e0e0e0; border-radius:8px; padding:12px 15px; font-size:15px; background-color:#f5f5f5; border:none; }
+        .form-control:focus { border-color:#4361ee; box-shadow:0 0 0 0.2rem rgba(67,97,238,0.1); background-color:#eee; }
+        .btn-login { background-color:#4361ee; color:white; border:none; border-radius:50px; padding:15px; font-size:18px; font-weight:600; width:100%; margin-top:30px; transition:background-color 0.3s; }
+        .btn-login:hover { background-color:#3651d4; }
+        .btn-login:disabled { background-color:#bbb; cursor:not-allowed; }
+        .sign-up-text { text-align:center; margin-top:20px; color:#6c757d; }
+        .sign-up-text a { color:#4361ee; text-decoration:none; font-weight:600; }
+        .forgot-link { text-align:right; margin-top:6px; }
+        .forgot-link a { color:#4361ee; font-size:13px; text-decoration:none; font-weight:500; }
+        .forgot-link a:hover { text-decoration:underline; }
+        .password-toggle { position:absolute; right:15px; top:50%; transform:translateY(-50%); cursor:pointer; color:#6c757d; background:none; border:none; font-size:18px; z-index:10; }
+        .position-relative { position:relative; }
+        .alert { border-radius:8px; padding:12px 16px; margin-bottom:20px; font-size:14px; animation:slideIn 0.3s ease-in; }
+        @keyframes slideIn { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
+        .alert-danger  { background-color:#ffebee; color:#c62828; border-left:4px solid #c62828; border:none; }
+        .alert-success { background-color:#e8f5e9; color:#2e7d32; border-left:4px solid #2e7d32; border:none; }
+        .alert-warning { background-color:#fff3e0; color:#e65100; border-left:4px solid #e65100; border:none; }
+        .spinner-border-sm { width:14px; height:14px; border-width:2px; margin-right:8px; }
+        .loading-text { display:none; text-align:center; color:#4361ee; margin-bottom:15px; animation:pulse 1.5s ease-in-out infinite; }
+        .loading-text.show { display:block; }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+        .text-muted { font-size:13px; color:#6c757d; margin-top:5px; display:block; }
+        .login-method-toggle { display:flex; background:#f0f0f0; border-radius:10px; padding:4px; margin-bottom:20px; }
+        .login-method-toggle button { flex:1; border:none; background:transparent; padding:9px; border-radius:8px; font-size:14px; font-weight:600; color:#6c757d; cursor:pointer; transition:all 0.2s; }
+        .login-method-toggle button.active { background:#fff; color:#4361ee; box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+        .phone-input-wrapper { display:flex; }
+        .phone-prefix { background-color:#f5f5f5; border:none; border-radius:8px 0 0 8px; color:#212529; font-weight:500; padding:12px 15px; display:flex; align-items:center; }
+        .phone-input-wrapper .form-control { border-radius:0 8px 8px 0; }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="logo-container">
+        <svg class="eagle-logo" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="50,30 100,10 100,60" fill="#FFC107"/>
+            <polygon points="100,10 150,30 100,60" fill="#212529"/>
+            <polygon points="50,70 100,50 100,100" fill="#FFC107"/>
+            <polygon points="100,50 150,70 100,100" fill="#212529"/>
+        </svg>
+        <div class="company-name">VAULTRISE FUND</div>
+    </div>
+
+    <h1 class="welcome-title">Welcome Back</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% elif message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% elif message.tags == 'warning' %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <div id="errorAlert"   class="alert alert-danger"  style="display:none;"></div>
+    <div id="successAlert" class="alert alert-success" style="display:none;"></div>
+    <div id="warningAlert" class="alert alert-warning" style="display:none;"></div>
+
+    <div id="loading" class="loading-text">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Signing in...
+    </div>
+
+    <div class="login-method-toggle">
+        <button type="button" id="emailTabBtn" class="active" onclick="switchMethod('email')">Email</button>
+        <button type="button" id="phoneTabBtn" onclick="switchMethod('phone')">Phone</button>
+    </div>
+
+    <form id="loginForm" method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+        <input type="hidden" id="username" name="username" value="">
+
+        <div class="mb-3" id="emailField">
+            <label for="emailInput" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="emailInput"
+                   placeholder="you@example.com" autocomplete="email"
+                   value="{{ request.POST.username|default:'' }}">
+            <small class="text-muted">Sign in using the email you registered with</small>
+        </div>
+
+        <div class="mb-3" id="phoneField" style="display:none;">
+            <label for="phoneInput" class="form-label">Phone Number</label>
+            <div class="phone-input-wrapper">
+                <span class="phone-prefix">+256</span>
+                <input type="text" class="form-control" id="phoneInput"
+                       placeholder="7XXXXXXXX" maxlength="10" autocomplete="tel">
+            </div>
+            <small class="text-muted">Enter your phone number without country code</small>
+        </div>
+
+        <div class="mb-1 position-relative">
+            <label for="password" class="form-label">Login Password</label>
+            <input type="password" class="form-control" id="password" name="password"
+                   placeholder="Enter your password" required minlength="6" autocomplete="current-password">
+            <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Toggle password">
+                <span id="eyeIcon">👁</span>
+            </button>
+        </div>
+
+        <!-- ── Forgot password link right below the password field ── -->
+        <div class="forgot-link mb-3">
+            <a href="{% url 'password_reset_request' %}">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-login" id="submitBtn">
+            <span id="buttonText">Login Now</span>
+        </button>
+
+        <div class="sign-up-text">
+            Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    var currentMethod = 'email';
+
+    function switchMethod(method) {
+        currentMethod = method;
+        var emailField = document.getElementById('emailField');
+        var phoneField = document.getElementById('phoneField');
+        var emailBtn   = document.getElementById('emailTabBtn');
+        var phoneBtn   = document.getElementById('phoneTabBtn');
+        if (method === 'email') {
+            emailField.style.display = 'block'; phoneField.style.display = 'none';
+            emailBtn.classList.add('active'); phoneBtn.classList.remove('active');
+            document.getElementById('emailInput').focus();
+        } else {
+            emailField.style.display = 'none'; phoneField.style.display = 'block';
+            phoneBtn.classList.add('active'); emailBtn.classList.remove('active');
+            document.getElementById('phoneInput').focus();
+        }
+        hideMessages();
+    }
+
+    function togglePassword() {
+        var input = document.getElementById('password');
+        var eye   = document.getElementById('eyeIcon');
+        input.type = input.type === 'password' ? 'text' : 'password';
+        eye.textContent = input.type === 'password' ? '👁' : '👁️‍🗨️';
+    }
+
+    function showMessage(message, type) {
+        type = type || 'error';
+        hideMessages();
+        var map = { error:'errorAlert', success:'successAlert', warning:'warningAlert' };
+        var el  = document.getElementById(map[type]);
+        if (el) { el.textContent = message; el.style.display = 'block'; setTimeout(function(){ el.style.display='none'; }, 5000); }
+    }
+
+    function hideMessages() {
+        ['errorAlert','successAlert','warningAlert'].forEach(function(id){ document.getElementById(id).style.display='none'; });
+    }
+
+    function validateEmail(e) { return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(e); }
+    function validatePhone(p) { p=p.replace(/[\s-]/g,''); return /^[07]\d{8,9}$/.test(p); }
+
+    document.getElementById('phoneInput').addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^\d]/g, '');
+    });
+
+    function validateForm() {
+        var password = document.getElementById('password').value;
+        if (currentMethod === 'email') {
+            var email = document.getElementById('emailInput').value.trim();
+            if (!email) { showMessage('Please enter your email address'); document.getElementById('emailInput').focus(); return false; }
+            if (!validateEmail(email)) { showMessage('Please enter a valid email address'); document.getElementById('emailInput').focus(); return false; }
+            document.getElementById('username').value = email.toLowerCase();
+        } else {
+            var phone = document.getElementById('phoneInput').value.trim();
+            if (!phone) { showMessage('Please enter your phone number'); document.getElementById('phoneInput').focus(); return false; }
+            if (!validatePhone(phone)) { showMessage('Please enter a valid Uganda phone number'); document.getElementById('phoneInput').focus(); return false; }
+            document.getElementById('username').value = phone;
+        }
+        if (!password) { showMessage('Please enter your password'); document.getElementById('password').focus(); return false; }
+        if (password.length < 6) { showMessage('Password must be at least 6 characters'); document.getElementById('password').focus(); return false; }
+        return true;
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideMessages();
+        if (!validateForm()) return;
+        var submitBtn = document.getElementById('submitBtn');
+        var buttonText = document.getElementById('buttonText');
+        var loading = document.getElementById('loading');
+        submitBtn.disabled = true;
+        buttonText.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Signing In...';
+        loading.classList.add('show');
+        this.submit();
+    });
+
+    document.getElementById('emailInput').addEventListener('keypress', function(e){ if(e.key==='Enter'){e.preventDefault();document.getElementById('password').focus();} });
+    document.getElementById('phoneInput').addEventListener('keypress', function(e){ if(e.key==='Enter'){e.preventDefault();document.getElementById('password').focus();} });
+    document.getElementById('password').addEventListener('keypress', function(e){ if(e.key==='Enter'){e.preventDefault();document.getElementById('loginForm').dispatchEvent(new Event('submit'));} });
+
+    window.addEventListener('load', function() {
+        if (!document.getElementById('emailInput').value) document.getElementById('emailInput').focus();
+        setTimeout(function() {
+            document.querySelectorAll('.alert.show').forEach(function(a) {
+                if (a.querySelector('.btn-close')) new bootstrap.Alert(a).close();
+            });
+        }, 5000);
+    });
+</script>
+</body>
+</html>

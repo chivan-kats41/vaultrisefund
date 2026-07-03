@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaultrise Fund Customer Service</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5; height: 100vh; overflow: hidden;
+        }
+        .chat-container { display: flex; flex-direction: column; height: 100vh; background: white; }
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 15px 20px;
+            display: flex; align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-shrink: 0;
+        }
+        .back-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; }
+        .chat-header h1 { flex: 1; font-size: 20px; margin: 0; text-align: center; font-weight: 600; margin-right: 39px; }
+        .service-banner {
+            background: linear-gradient(135deg, rgba(102,126,234,0.9) 0%, rgba(118,75,162,0.9) 100%);
+            padding: 15px 20px; margin: 15px; border-radius: 15px;
+            display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+        }
+        .service-info { display: flex; align-items: center; gap: 12px; }
+        .service-avatar {
+            width: 48px; height: 48px; border-radius: 50%; border: 3px solid white;
+            background: white; display: flex; align-items: center;
+            justify-content: center; font-size: 22px; color: #667eea;
+        }
+        .service-text h3 { color: white; font-size: 16px; font-weight: 600; margin: 0 0 3px; }
+        .service-text p  { color: rgba(255,255,255,0.85); font-size: 13px; margin: 0; }
+        .check-icon { color: white; font-size: 24px; }
+
+        /* Messages area */
+        .chat-messages { flex: 1; overflow-y: auto; padding: 15px; background: #f5f5f5; }
+        .message { margin-bottom: 16px; display: flex; align-items: flex-start; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        .message.user { flex-direction: row-reverse; }
+        .message-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #e3f2fd; display: flex; align-items: center;
+            justify-content: center; flex-shrink: 0; margin: 0 8px;
+        }
+        .message-avatar i { color: #667eea; font-size: 18px; }
+        .message.user .message-avatar { background: #667eea; }
+        .message.user .message-avatar i { color: white; }
+        .message-content {
+            max-width: 78%; padding: 10px 14px; border-radius: 18px;
+            background: white; box-shadow: 0 1px 6px rgba(0,0,0,0.08); word-wrap: break-word;
+        }
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border-bottom-right-radius: 4px;
+        }
+        .message:not(.user) .message-content { border-bottom-left-radius: 4px; }
+        .message-content p { margin: 0; font-size: 14px; line-height: 1.5; }
+        .sender-label { font-size: 11px; font-weight: 700; margin-bottom: 4px; opacity: 0.65; text-transform: uppercase; }
+        .message-time { font-size: 11px; opacity: 0.55; margin-top: 5px; display: block; }
+
+        /* Image grid inside a message */
+        .msg-images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .msg-images img {
+            width: 120px; height: 120px; object-fit: cover;
+            border-radius: 8px; cursor: pointer;
+            border: 2px solid rgba(255,255,255,0.3);
+            transition: transform 0.2s;
+        }
+        .msg-images img:hover { transform: scale(1.04); }
+
+        /* Input area */
+        .chat-input-area { background: white; padding: 12px 15px; border-top: 1px solid #e0e0e0; flex-shrink: 0; }
+        .preview-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .preview-thumb { position: relative; width: 64px; height: 64px; }
+        .preview-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0; }
+        .preview-thumb .rm { position: absolute; top: -5px; right: -5px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .upload-hint { font-size: 12px; color: #888; margin-bottom: 6px; }
+        .upload-hint span { color: #667eea; font-weight: 600; }
+        .input-wrapper { display: flex; align-items: center; gap: 8px; background: #f8f9fa; border-radius: 25px; padding: 6px 12px; }
+        .input-btn { background: none; border: none; color: #666; font-size: 21px; cursor: pointer; padding: 4px; transition: color 0.2s, transform 0.2s; display: flex; align-items: center; }
+        .input-btn:hover { color: #667eea; transform: scale(1.1); }
+        .chat-input { flex: 1; border: none; background: none; padding: 7px 10px; font-size: 14px; outline: none; }
+        .chat-input::placeholder { color: #aaa; }
+        .send-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 50%; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.2s; box-shadow: 0 2px 8px rgba(102,126,234,0.4);
+        }
+        .send-btn:hover { transform: scale(1.05); }
+        .send-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* Typing dots */
+        .typing-indicator { padding: 10px 14px; background: white; border-radius: 18px; width: fit-content; box-shadow: 0 1px 6px rgba(0,0,0,0.08); }
+        .typing-indicator span { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #667eea; margin: 0 2px; animation: typing 1.4s infinite; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%,60%,100% { transform:translateY(0); opacity:.5; } 30% { transform:translateY(-8px); opacity:1; } }
+
+        /* Lightbox */
+        #lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; }
+        #lightbox.open { display: flex; }
+        #lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+        #lightbox-close { position: absolute; top: 20px; right: 25px; color: white; font-size: 32px; cursor: pointer; }
+
+        .chat-messages::-webkit-scrollbar { width: 5px; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+<!-- Lightbox for full-size images -->
+<div id="lightbox" onclick="closeLightbox()">
+    <span id="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="full size">
+</div>
+
+<div class="chat-container">
+    <div class="chat-header">
+        <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i></button>
+        <h1>Help Center</h1>
+    </div>
+
+    <div class="service-banner">
+        <div class="service-info">
+            <div class="service-avatar"><i class="fas fa-headset"></i></div>
+            <div class="service-text">
+                <h3>Vaultrise Fund Support</h3>
+                <p>Typically replies within a few hours</p>
+            </div>
+        </div>
+        <div class="check-icon"><i class="fas fa-check-circle"></i></div>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+
+        {% for msg in messages %}
+        <div class="message {% if msg.sender_type == 'user' %}user{% endif %}" data-id="{{ msg.id }}">
+            <div class="message-avatar">
+                {% if msg.sender_type == 'user' %}<i class="fas fa-user"></i>
+                {% else %}<i class="fas fa-headset"></i>{% endif %}
+            </div>
+            <div class="message-content">
+                {% if msg.sender_type != 'user' %}
+                    <div class="sender-label">
+                        {% if msg.sender_type == 'admin' %}Support Agent{% else %}Auto Reply{% endif %}
+                    </div>
+                {% endif %}
+                {% if msg.message %}<p>{{ msg.message }}</p>{% endif %}
+                {% if msg.images.all %}
+                <div class="msg-images">
+                    {% for img in msg.images.all %}
+                    <img src="{{ img.image.url }}" alt="attachment" onclick="openLightbox('{{ img.image.url }}')">
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <span class="message-time">{{ msg.created_at|date:"H:i" }}</span>
+            </div>
+        </div>
+        {% empty %}
+        <div class="message" data-id="0">
+            <div class="message-avatar"><i class="fas fa-headset"></i></div>
+            <div class="message-content">
+                <div class="sender-label">Support Agent</div>
+                <p>👋 Welcome to Vaultrise Fund Support! How can we help you today?<br>
+                You can also attach <strong>screenshots or proof</strong> of any issue using the 📎 button below.</p>
+                <span class="message-time">Now</span>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Typing indicator -->
+        <div class="message" id="typingMessage" style="display:none;">
+            <div class="message-avatar"><i class="fas fa-headset"></i></div>
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+        </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+        <div id="previewBar" class="preview-bar"></div>
+        <div id="uploadHint" class="upload-hint" style="display:none;">
+            📎 <span id="fileCount">0</span> file(s) attached — tap × to remove
+        </div>
+        <div class="input-wrapper">
+            <button class="input-btn" onclick="document.getElementById('fileInput').click()" title="Attach images / proof">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            <!-- multiple + accept ensures proof uploads work -->
+            <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+            <input type="text" class="chat-input" id="chatInput"
+                   placeholder="Type a message or attach proof…" onkeypress="handleEnter(event)">
+            <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+var uploadedFiles = [];
+var lastMessageId = 0;
+var pollInterval  = null;
+
+// Seed lastMessageId from rendered messages
+document.querySelectorAll('.message[data-id]').forEach(function(el) {
+    var id = parseInt(el.dataset.id) || 0;
+    if (id > lastMessageId) lastMessageId = id;
+});
+
+// ── CSRF ──────────────────────────────────────────────────────────────────────
+function getCookie(name) {
+    var v = '; ' + document.cookie, p = v.split('; ' + name + '=');
+    if (p.length === 2) return p.pop().split(';').shift();
+    return '';
+}
+
+// ── File handling ─────────────────────────────────────────────────────────────
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    Array.from(e.target.files).forEach(function(file) {
+        if (!file.type.startsWith('image/')) return;
+        if (file.size > 10 * 1024 * 1024) { alert(file.name + ' exceeds 10MB limit.'); return; }
+        uploadedFiles.push(file);
+        addPreview(file);
+    });
+    updateHint();
+    this.value = '';
+});
+
+function addPreview(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var wrap = document.createElement('div');
+        wrap.className = 'preview-thumb';
+        wrap.dataset.name = file.name;
+        wrap.innerHTML = '<img src="' + e.target.result + '" alt="preview">'
+            + '<button class="rm" onclick="removeFile(\'' + file.name.replace(/'/g,"\\'") + '\', this.parentElement)">×</button>';
+        document.getElementById('previewBar').appendChild(wrap);
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeFile(name, el) {
+    uploadedFiles = uploadedFiles.filter(function(f) { return f.name !== name; });
+    el.remove();
+    updateHint();
+}
+
+function updateHint() {
+    var hint = document.getElementById('uploadHint');
+    if (uploadedFiles.length > 0) {
+        hint.style.display = 'block';
+        document.getElementById('fileCount').textContent = uploadedFiles.length;
+    } else {
+        hint.style.display = 'none';
+    }
+}
+
+function clearAllFiles() {
+    uploadedFiles = [];
+    document.getElementById('previewBar').innerHTML = '';
+    updateHint();
+}
+
+// ── Send ──────────────────────────────────────────────────────────────────────
+function handleEnter(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function sendMessage() {
+    var input = document.getElementById('chatInput');
+    var text  = input.value.trim();
+    if (!text && uploadedFiles.length === 0) return;
+
+    var btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+
+    var fd = new FormData();
+    fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+    if (text) fd.append('message', text);
+    uploadedFiles.forEach(function(f) { fd.append('images', f); });
+
+    // Optimistic render
+    var previewUrls = uploadedFiles.map(function(f) { return URL.createObjectURL(f); });
+    appendMessage({ sender_type: 'user', message: text, images: previewUrls, created_at: now() });
+
+    input.value = '';
+    clearAllFiles();
+    showTyping();
+
+    fetch('/services/send/', { method: 'POST', body: fd })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            hideTyping();
+            btn.disabled = false;
+            if (!data.success) { alert('Failed to send. Please try again.'); return; }
+            if (data.user_message && data.user_message.id > lastMessageId) lastMessageId = data.user_message.id;
+            if (data.bot_reply) {
+                setTimeout(function() {
+                    appendMessage(data.bot_reply);
+                    if (data.bot_reply.id > lastMessageId) lastMessageId = data.bot_reply.id;
+                }, 900);
+            }
+        })
+        .catch(function() {
+            hideTyping();
+            btn.disabled = false;
+            alert('Network error. Please check your connection.');
+        });
+}
+
+// ── Append bubble ─────────────────────────────────────────────────────────────
+function appendMessage(msg) {
+    var isUser  = msg.sender_type === 'user';
+    var div     = document.createElement('div');
+    div.className = 'message' + (isUser ? ' user' : '');
+    if (msg.id) div.dataset.id = msg.id;
+
+    var label = '';
+    if (!isUser) {
+        var who = msg.sender_type === 'admin' ? 'Support Agent' : 'Auto Reply';
+        label = '<div class="sender-label">' + who + '</div>';
+    }
+
+    var imgs = '';
+    if (msg.images && msg.images.length) {
+        imgs = '<div class="msg-images">';
+        msg.images.forEach(function(url) {
+            imgs += '<img src="' + url + '" alt="attachment" onclick="openLightbox(\'' + url + '\')">';
+        });
+        imgs += '</div>';
+    }
+
+    var txt = msg.message ? '<p>' + escapeHtml(msg.message) + '</p>' : '';
+
+    div.innerHTML =
+        '<div class="message-avatar"><i class="fas ' + (isUser ? 'fa-user' : 'fa-headset') + '"></i></div>'
+      + '<div class="message-content">' + label + txt + imgs
+      + '<span class="message-time">' + (msg.created_at || '') + '</span></div>';
+
+    var typing = document.getElementById('typingMessage');
+    document.getElementById('chatMessages').insertBefore(div, typing);
+    scrollToBottom();
+}
+
+// ── Typing ────────────────────────────────────────────────────────────────────
+function showTyping() { document.getElementById('typingMessage').style.display = 'flex'; scrollToBottom(); }
+function hideTyping() { document.getElementById('typingMessage').style.display = 'none'; }
+
+// ── Poll for admin replies ────────────────────────────────────────────────────
+function pollForReplies() {
+    fetch('/services/poll/?since_id=' + lastMessageId)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success || !data.messages.length) return;
+            data.messages.forEach(function(msg) {
+                appendMessage(msg);
+                if (msg.id > lastMessageId) lastMessageId = msg.id;
+            });
+        })
+        .catch(function() {});
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+function openLightbox(url) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function scrollToBottom() {
+    var c = document.getElementById('chatMessages');
+    setTimeout(function() { c.scrollTop = c.scrollHeight; }, 100);
+}
+function escapeHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function now() { return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+    scrollToBottom();
+    pollInterval = setInterval(pollForReplies, 10000);
+});
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden) clearInterval(pollInterval);
+    else pollInterval = setInterval(pollForReplies, 10000);
+});
+</script>
+</body>
+</html>
