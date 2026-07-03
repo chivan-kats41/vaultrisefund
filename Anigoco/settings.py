@@ -141,7 +141,7 @@ LOGOUT_REDIRECT_URL = '/login/'
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'  # Changed from 'static' to avoid conflict
 STATICFILES_DIRS = [
-    BASE_DIR / 'Anigoco' / 'static',  # Use BASE_DIR for absolute path
+    BASE_DIR / 'static',  # Use BASE_DIR for absolute path
 ]
 
 

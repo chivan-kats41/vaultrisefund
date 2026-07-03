@@ -11,6 +11,22 @@ Handles:
 - User logout
 - Referral code tracking
 - Referral relationship building (L1 / L2 / L3) — called AFTER referred_by is saved
+
+VALIDATION-FIRST REGISTRATION (this update)
+--------------------------------------------
+Previously, register_view() created the User and UserProfile rows FIRST,
+and only checked the invitation code AFTERWARDS. If the code was invalid,
+the view just attached a warning message but still committed the
+transaction — so an invalid invitation code still resulted in a real,
+usable account being created.
+
+This has been restructured so that EVERY field — including the invitation
+code — is fully validated BEFORE the `transaction.atomic()` block is ever
+entered. If any single check fails (bad email, bad phone, short password,
+short nickname, duplicate email/phone, or an invitation code that doesn't
+match any existing referral_code), the view returns immediately with an
+error message and NOTHING is written to the database. No orphaned or
+"invite-less" accounts can be created anymore.
 """
 
 from django.shortcuts import render, redirect
@@ -209,9 +225,19 @@ def register_view(request):
         print(f"Invitation code: {invitation_code or '(none)'}")
         print("=" * 50)
 
-        # Validation
-        if not all([phone, email, password, nickname]):
-            messages.error(request, 'All fields are required')
+        # ════════════════════════════════════════════════════════════════
+        # STEP 1 — VALIDATE EVERYTHING FIRST. Nothing is written to the
+        # database until every single check below has passed. This is the
+        # key guarantee: if the invitation code (or any other field) is
+        # invalid, we return here and NO User/UserProfile row is ever
+        # created — not even a partial one.
+        # ════════════════════════════════════════════════════════════════
+
+        # Presence check — invitation_code is now required, matching the
+        # signup form (which marks it required and doesn't allow submission
+        # without it).
+        if not all([phone, email, password, nickname, invitation_code]):
+            messages.error(request, 'All fields are required, including the invitation code')
             return render(request, 'register.html')
 
         if not validate_email(email):
@@ -228,6 +254,10 @@ def register_view(request):
             messages.error(request, 'Password must be at least 6 characters')
             return render(request, 'register.html')
 
+        if len(nickname) < 3:
+            messages.error(request, 'Nickname must be at least 3 characters')
+            return render(request, 'register.html')
+
         if User.objects.filter(email=email).exists():
             messages.error(request, 'Email already registered')
             return render(request, 'register.html')
@@ -236,6 +266,23 @@ def register_view(request):
             messages.error(request, 'Phone number already registered')
             return render(request, 'register.html')
 
+        # ── Invitation code validation — checked BEFORE any account is
+        # created. If the code doesn't match any existing referral_code,
+        # registration is rejected outright with an error message, and the
+        # function returns without touching the database at all.
+        try:
+            referrer_profile = UserProfile.objects.get(referral_code=invitation_code)
+        except UserProfile.DoesNotExist:
+            print(f"Invalid referral code: {invitation_code} — registration rejected, no account created")
+            messages.error(request, 'Invalid invitation code. Please check the code and try again.')
+            return render(request, 'register.html')
+
+        # ════════════════════════════════════════════════════════════════
+        # STEP 2 — ALL VALIDATION PASSED. Only now do we create the account.
+        # Everything below happens inside a single atomic transaction, so if
+        # anything unexpected fails mid-way, the whole thing rolls back and
+        # still leaves no partial account behind.
+        # ════════════════════════════════════════════════════════════════
         try:
             with transaction.atomic():
                 print(f"Creating user: email={email}, username={formatted_phone}")
@@ -278,33 +325,20 @@ def register_view(request):
 
                 # ── Referral linking ──────────────────────────────────────
                 #
-                # KEY STEP ORDER:
-                #   1. Find the referrer profile by invitation code
-                #   2. Set profile.referred_by and SAVE it to the DB
-                #   3. THEN call _build_referral_relationships()
+                # The invitation code was already validated in Step 1, so
+                # referrer_profile is guaranteed to exist here. We just:
+                #   1. Set profile.referred_by and SAVE it to the DB
+                #   2. THEN call _build_referral_relationships()
                 #
                 # This order matters because _build_referral_relationships()
                 # walks up the chain using referred_by fields, which must
                 # already be in the database.
                 #
-                if invitation_code:
-                    try:
-                        referrer_profile = UserProfile.objects.get(referral_code=invitation_code)
+                profile.referred_by = referrer_profile
+                profile.save(update_fields=['referred_by'])
+                print(f"referred_by set to: {referrer_profile.user.username}")
 
-                        # Step 1: persist the link
-                        profile.referred_by = referrer_profile
-                        profile.save(update_fields=['referred_by'])
-                        print(f"referred_by set to: {referrer_profile.user.username}")
-
-                        # Step 2: build L1/L2/L3 rows now that referred_by is in DB
-                        _build_referral_relationships(user, referrer_profile)
-
-                    except UserProfile.DoesNotExist:
-                        print(f"Invalid referral code: {invitation_code}")
-                        messages.warning(
-                            request,
-                            'Invalid invitation code, but account created successfully'
-                        )
+                _build_referral_relationships(user, referrer_profile)
 
                 # ✅ Do NOT auto-login after registration — send the user to
                 # the login page instead so they sign in with the credentials

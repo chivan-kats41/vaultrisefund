@@ -30,10 +30,19 @@
             padding: 24px 20px;
         }
 
+        .welcome-section {
+            text-align: center;
+        }
+
         .logo {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 16px;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 16px;
+            display: block;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.14);
         }
 
         .welcome-section h2 {
@@ -266,16 +275,81 @@
         .password-match-hint.show { display: block; }
         .password-match-hint.ok { color: #2e7d32; }
         .password-match-hint.bad { color: #c62828; }
+
+        /* ============================================================
+           RESPONSIVE STYLES — mobile-first, no functional changes
+           ============================================================ */
+
+        /* ---------- Small phones: <= 375px ---------- */
+        @media (max-width: 375px) {
+            .content { padding: 18px 14px; }
+            .logo { width: 90px; height: 90px; margin: 0 auto 10px; }
+            .welcome-section h2 { font-size: 22px; }
+            .welcome-section p { font-size: 14px; margin-bottom: 22px; }
+            .form-group { margin-bottom: 16px; }
+            .form-group label { font-size: 13px; margin-bottom: 6px; }
+            .form-group input,
+            .phone-code,
+            .phone-input-wrapper input { padding: 10px; font-size: 13px; }
+            .signup-btn { padding: 14px; font-size: 15px; }
+        }
+
+        /* ---------- Phones: 376px - 576px ---------- */
+        @media (min-width: 376px) and (max-width: 576px) {
+            .content { padding: 20px 16px; }
+            .logo { width: 100px; height: 100px; }
+            .welcome-section h2 { font-size: 24px; }
+            .welcome-section p { font-size: 15px; margin-bottom: 26px; }
+        }
+
+        /* ---------- Large phones / small tablets: 577px - 768px ---------- */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .mobile-container { max-width: 520px; }
+            .content { padding: 28px 24px; }
+        }
+
+        /* ---------- Tablets / small laptops: 769px - 992px ---------- */
+        @media (min-width: 769px) and (max-width: 992px) {
+            body { display: flex; justify-content: center; padding: 40px 0; }
+            .mobile-container {
+                max-width: 480px;
+                min-height: auto;
+                border-radius: 16px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            }
+        }
+
+        /* ---------- Desktop: >= 993px ---------- */
+        @media (min-width: 993px) {
+            body { display: flex; justify-content: center; padding: 56px 0; }
+            .mobile-container {
+                max-width: 460px;
+                min-height: auto;
+                border-radius: 16px;
+                box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+            }
+            .content { padding: 32px 36px; }
+        }
+
+        /* ---------- Large desktop: >= 1400px ---------- */
+        @media (min-width: 1400px) {
+            body { padding: 80px 0; }
+        }
+
+        /* ---------- Short viewports (landscape phones) ---------- */
+        @media (max-height: 500px) and (max-width: 900px) {
+            .content { padding: 16px 14px; }
+            .logo { width: 70px; height: 70px; margin: 0 auto 6px; }
+            .welcome-section h2 { font-size: 20px; margin-bottom: 2px; }
+            .welcome-section p { font-size: 13px; margin-bottom: 16px; }
+        }
     </style>
 </head>
 <body>
     <div class="mobile-container">
         <div class="content">
             <div class="welcome-section">
-                <svg class="logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="30,50 50,20 70,50 60,45 50,30 40,45" fill="#FFD700"/>
-                    <polygon points="45,50 65,20 85,50 75,45 65,30 55,45" fill="#1a1a1a"/>
-                </svg>
+                <img src="{% static 'img/og-cover.jpg' %}" alt="Vaultrise Fund" class="logo">
                 <h2>VAULTRISE FUND</h2>
                 <h2>Welcome to Sign Up</h2>
                 <p>Create your account</p>

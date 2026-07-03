@@ -10,7 +10,16 @@
         body { background-color:#f8f9fa; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,sans-serif; }
         .login-container { max-width:500px; margin:50px auto; padding:0 20px; }
         .logo-container { text-align:center; margin-bottom:30px; }
-        .eagle-logo { width:80px; height:60px; margin-bottom:20px; }
+        .eagle-logo {
+            width:120px;
+            height:120px;
+            margin:0 auto 20px;
+            display:block;
+            border-radius:50%;
+            object-fit:cover;
+            border:3px solid #fff;
+            box-shadow:0 2px 14px rgba(0,0,0,0.14);
+        }
         .company-name { font-size:28px; font-weight:bold; color:#000; letter-spacing:2px; }
         .welcome-title { font-size:32px; font-weight:600; color:#212529; margin-bottom:10px; }
         .subtitle { color:#6c757d; font-size:16px; margin-bottom:40px; }
@@ -43,17 +52,75 @@
         .phone-input-wrapper { display:flex; }
         .phone-prefix { background-color:#f5f5f5; border:none; border-radius:8px 0 0 8px; color:#212529; font-weight:500; padding:12px 15px; display:flex; align-items:center; }
         .phone-input-wrapper .form-control { border-radius:0 8px 8px 0; }
+
+        /* ============================================================
+           RESPONSIVE STYLES — mobile-first, no functional changes
+           ============================================================ */
+
+        /* ---------- Small phones: <= 375px ---------- */
+        @media (max-width: 375px) {
+            .login-container { margin:24px auto; padding:0 14px; }
+            .eagle-logo { width:90px; height:90px; margin:0 auto 14px; }
+            .company-name { font-size:22px; letter-spacing:1px; }
+            .welcome-title { font-size:24px; }
+            .subtitle { font-size:14px; margin-bottom:26px; }
+            .btn-login { padding:13px; font-size:16px; margin-top:22px; }
+            .form-control { padding:10px 12px; font-size:14px; }
+            .login-method-toggle button { padding:8px; font-size:13px; }
+        }
+
+        /* ---------- Phones: 376px - 576px ---------- */
+        @media (min-width: 376px) and (max-width: 576px) {
+            .login-container { margin:32px auto; padding:0 18px; }
+            .eagle-logo { width:100px; height:100px; margin:0 auto 16px; }
+            .company-name { font-size:24px; letter-spacing:1.5px; }
+            .welcome-title { font-size:27px; }
+            .subtitle { font-size:15px; margin-bottom:30px; }
+            .btn-login { padding:14px; font-size:17px; margin-top:26px; }
+        }
+
+        /* ---------- Large phones / small tablets: 577px - 768px ---------- */
+        @media (min-width: 577px) and (max-width: 768px) {
+            .login-container { max-width:460px; margin:44px auto; }
+            .welcome-title { font-size:30px; }
+        }
+
+        /* ---------- Tablets / small laptops: 769px - 992px ---------- */
+        @media (min-width: 769px) and (max-width: 992px) {
+            .login-container { max-width:480px; margin:60px auto; }
+        }
+
+        /* ---------- Desktop: >= 993px ---------- */
+        @media (min-width: 993px) {
+            .login-container {
+                max-width:460px;
+                margin:70px auto;
+                padding:36px 40px;
+                background:#fff;
+                border-radius:16px;
+                box-shadow:0 4px 24px rgba(0,0,0,0.06);
+            }
+        }
+
+        /* ---------- Large desktop: >= 1400px ---------- */
+        @media (min-width: 1400px) {
+            .login-container { margin:90px auto; }
+        }
+
+        /* ---------- Short viewports (landscape phones) ---------- */
+        @media (max-height: 500px) and (max-width: 900px) {
+            .login-container { margin:20px auto; }
+            .logo-container { margin-bottom:14px; }
+            .eagle-logo { width:70px; height:70px; margin:0 auto 8px; }
+            .welcome-title { font-size:22px; margin-bottom:6px; }
+            .subtitle { margin-bottom:18px; }
+        }
     </style>
 </head>
 <body>
 <div class="login-container">
     <div class="logo-container">
-        <svg class="eagle-logo" viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-            <polygon points="50,30 100,10 100,60" fill="#FFC107"/>
-            <polygon points="100,10 150,30 100,60" fill="#212529"/>
-            <polygon points="50,70 100,50 100,100" fill="#FFC107"/>
-            <polygon points="100,50 150,70 100,100" fill="#212529"/>
-        </svg>
+        <img src="{% static 'img/og-cover.jpg' %}" alt="Vaultrise Fund" class="eagle-logo">
         <div class="company-name">VAULTRISE FUND</div>
     </div>
 
@@ -117,13 +184,15 @@
             <small class="text-muted">Enter your phone number without country code</small>
         </div>
 
-        <div class="mb-1 position-relative">
+        <div class="mb-1">
             <label for="password" class="form-label">Login Password</label>
-            <input type="password" class="form-control" id="password" name="password"
-                   placeholder="Enter your password" required minlength="6" autocomplete="current-password">
-            <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Toggle password">
-                <span id="eyeIcon">👁</span>
-            </button>
+            <div class="position-relative">
+                <input type="password" class="form-control" id="password" name="password"
+                       placeholder="Enter your password" required minlength="6" autocomplete="current-password">
+                <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="Toggle password">
+                    <span id="eyeIcon">👁</span>
+                </button>
+            </div>
         </div>
 
         <!-- ── Forgot password link right below the password field ── -->
