@@ -420,6 +420,14 @@ def login_view(request):
                 profile.generate_referral_code()
                 print("Profile created during login")
 
+            # ✅ Flag this session as "just logged in" so whichever page the
+            # user lands on next can auto-show the "join our channel" popup
+            # once. The view rendering that page is responsible for popping
+            # this flag out of the session (so it only fires once) and
+            # passing it into the template context, e.g.:
+            #     show_welcome_popup = request.session.pop('just_logged_in', False)
+            request.session['just_logged_in'] = True
+
             # ✅ user.nickname is now the source of truth for display name
             display_name = user.nickname if user.nickname else user.username
             messages.success(request, f'Welcome back, {display_name}!')

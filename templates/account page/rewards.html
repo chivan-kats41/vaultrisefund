@@ -4,48 +4,244 @@
 {% block title %}Reward Records{% endblock %}
 
 {% block content %}
-<div class="index-header">
-    <div class="d-flex align-items-center gap-3">
-        <a href="{% url 'account' %}" class="text-white opacity-75">
-            <span class="material-symbols-outlined">arrow_back</span>
-        </a>
-        <h5 class="fw-bold text-white mb-0">Reward Records</h5>
-    </div>
-    <div class="mt-2 text-white opacity-75 small">
-        Total Rewards: <strong>UGX {{ total_rewards|floatformat:2 }}</strong>
-    </div>
-</div>
+<style>
+    .rewards-page {
+        background: linear-gradient(180deg, #5C7CFA 0%, #4263EB 100%);
+        min-height: 100vh;
+        padding-bottom: 90px;
+    }
 
-<div class="px-3 pt-3 pb-5">
-    {% if reward_transactions %}
-        {% for txn in reward_transactions %}
-        <div class="common-card mb-2">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-semibold small">{{ txn.description|default:"Commission Reward" }}</div>
-                    <div class="text-muted" style="font-size:11px;">
-                        {{ txn.created_at|date:"M d, Y H:i" }}
-                    </div>
-                </div>
-                <div class="text-end">
-                    <div class="fw-bold text-success">
-                        + UGX {{ txn.amount|floatformat:2 }}
-                    </div>
-                    <div class="text-muted" style="font-size:10px;">
-                        {{ txn.get_transaction_type_display|default:txn.transaction_type }}
-                    </div>
-                </div>
+    /* ---------- Header ---------- */
+    .rewards-header {
+        padding: 18px 20px 22px 20px;
+        color: #fff;
+    }
+
+    .rewards-header .back-link {
+        color: #fff;
+        opacity: 0.85;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+
+    .rewards-header .back-link:hover {
+        background: rgba(255, 255, 255, 0.15);
+        opacity: 1;
+    }
+
+    .rewards-header h5 {
+        font-size: 1.1rem;
+        letter-spacing: 0.2px;
+    }
+
+    .total-rewards-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 14px;
+        padding: 12px 16px;
+        color: #fff;
+    }
+
+    .total-rewards-badge .label {
+        font-size: 12px;
+        opacity: 0.85;
+        display: block;
+    }
+
+    .total-rewards-badge .amount {
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+
+    /* ---------- Content area ---------- */
+    .rewards-content {
+        padding: 4px 16px 20px 16px;
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    .rewards-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .reward-card {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .reward-card .desc {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 3px;
+    }
+
+    .reward-card .date {
+        font-size: 11px;
+        color: #888;
+    }
+
+    .reward-card .amount {
+        font-size: 15px;
+        font-weight: 700;
+        color: #16a34a;
+        white-space: nowrap;
+    }
+
+    .reward-card .type-tag {
+        font-size: 10px;
+        color: #999;
+        text-transform: capitalize;
+    }
+
+    /* ---------- Empty state ---------- */
+    .rewards-empty {
+        text-align: center;
+        padding: 70px 20px 40px 20px;
+        color: #fff;
+    }
+
+    .rewards-empty .material-symbols-outlined {
+        font-size: 64px;
+        color: rgba(255, 255, 255, 0.55);
+        display: block;
+        margin: 0 auto 16px auto;
+    }
+
+    .rewards-empty p {
+        font-size: 15px;
+        color: rgba(255, 255, 255, 0.85);
+        margin-bottom: 22px;
+    }
+
+    .rewards-empty .invite-btn {
+        background: #fff;
+        color: #4263EB;
+        font-weight: 600;
+        padding: 12px 32px;
+        border-radius: 30px;
+        text-decoration: none;
+        display: inline-block;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
+    }
+
+    .rewards-empty .invite-btn:hover {
+        transform: translateY(-2px);
+        color: #4263EB;
+    }
+
+    /* ---------- Responsive breakpoints ---------- */
+
+    /* Small phones */
+    @media (max-width: 360px) {
+        .rewards-header h5 {
+            font-size: 1rem;
+        }
+
+        .total-rewards-badge .amount {
+            font-size: 1rem;
+        }
+
+        .rewards-empty .material-symbols-outlined {
+            font-size: 52px;
+        }
+    }
+
+    /* Tablets and up: allow two reward cards per row */
+    @media (min-width: 600px) {
+        .rewards-list {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    /* Desktop: comfortable centered column, larger empty state */
+    @media (min-width: 992px) {
+        .rewards-header {
+            padding: 24px 32px 28px 32px;
+        }
+
+        .rewards-content {
+            max-width: 900px;
+            padding: 8px 32px 40px 32px;
+        }
+
+        .rewards-list {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .rewards-empty {
+            padding: 100px 20px 60px 20px;
+        }
+
+        .rewards-empty .material-symbols-outlined {
+            font-size: 80px;
+        }
+
+        .rewards-empty p {
+            font-size: 17px;
+        }
+    }
+</style>
+
+<div class="rewards-page">
+    <div class="rewards-header">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'account' %}" class="back-link">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </a>
+            <h5 class="fw-bold mb-0">Reward Records</h5>
+        </div>
+
+        <div class="total-rewards-badge">
+            <span class="material-symbols-outlined">savings</span>
+            <div>
+                <span class="label">Total Rewards</span>
+                <span class="amount">UGX {{ total_rewards|floatformat:2 }}</span>
             </div>
         </div>
-        {% endfor %}
-    {% else %}
-        <div class="text-center py-5 text-muted">
-            <span class="material-symbols-outlined fs-1 opacity-25">card_giftcard</span>
-            <p class="mt-2">No reward records yet.</p>
-            <a href="{% url 'team' %}" class="btn btn-primary rounded-pill px-4 mt-2">
-                Invite Friends to Earn
-            </a>
-        </div>
-    {% endif %}
+    </div>
+
+    <div class="rewards-content">
+        {% if reward_transactions %}
+            <div class="rewards-list">
+                {% for txn in reward_transactions %}
+                <div class="reward-card">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                            <div class="desc">{{ txn.description|default:"Commission Reward" }}</div>
+                            <div class="date">{{ txn.created_at|date:"M d, Y H:i" }}</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="amount">+ UGX {{ txn.amount|floatformat:2 }}</div>
+                            <div class="type-tag">{{ txn.get_transaction_type_display|default:txn.transaction_type }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="rewards-empty">
+                <span class="material-symbols-outlined">card_giftcard</span>
+                <p>No reward records yet.</p>
+                <a href="{% url 'team' %}" class="invite-btn">Invite Friends to Earn</a>
+            </div>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

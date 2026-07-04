@@ -48,10 +48,12 @@ INSTALLED_APPS = [
     'blog',
     'rest_framework',
     'services',
+    'honeypot',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    #'honeypot.middleware.BannedIPMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

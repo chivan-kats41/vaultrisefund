@@ -161,6 +161,8 @@ class Notification(models.Model):
         ('recharge_confirmed',   'Recharge Confirmed'),
         ('settlement',           'Settlement Notification'),
         ('referral',             'Referral Notification'),
+        ('blog_approved',        'Blog Post Approved'),   # ← NEW
+        ('blog_rejected',        'Blog Post Rejected'),   # ← NEW
     ]
 
     user = models.ForeignKey(
@@ -460,6 +462,7 @@ class Transaction(models.Model):
         ('system_deduction',     'System Deduction'),
         ('referral_bonus',       'Referral Bonus'),
         ('vip_reward',           'VIP Reward'),
+        ('blog_reward',          'Blog Post Reward'),      # ← NEW
     ]
 
     user = models.ForeignKey(
@@ -587,7 +590,6 @@ def save_user_profile(sender, instance, **kwargs):
     if hasattr(instance, 'profile'):
         instance.profile.save()
 
-        # Add this to your users/models.py (or accounts/models.py — wherever your user model lives)
 
 import random
 import string

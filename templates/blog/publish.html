@@ -69,6 +69,11 @@
             color: #1a1a1a;
             margin-bottom: 15px;
         }
+
+        .section-title .required-star {
+            color: #e53935;
+            margin-left: 4px;
+        }
         
         .content-textarea {
             width: 100%;
@@ -105,6 +110,11 @@
             cursor: pointer;
             transition: all 0.3s ease;
             background: #fafafa;
+        }
+
+        .upload-area.required-empty {
+            border-color: #f59e0b;
+            background: #fffbeb;
         }
         
         .upload-area:hover {
@@ -258,14 +268,14 @@
 
         <!-- Upload Photos Section -->
         <div class="form-section">
-            <div class="section-title">Upload photos (Optional)</div>
-            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="section-title">Upload photos <span class="required-star">* Required</span></div>
+            <div class="upload-area required-empty" id="uploadArea" onclick="document.getElementById('fileInput').click()">
                 <div class="upload-icon">
                     <i class="fas fa-image"></i>
                 </div>
                 <div class="upload-text">Click to upload images</div>
                 <div class="upload-text" style="font-size: 0.8rem; margin-top: 5px;">
-                    Maximum 9 images • JPG, PNG, GIF, WebP • Max 5MB each
+                    At least 1 image required • Maximum 9 images • JPG, PNG, GIF, WebP • Max 5MB each
                 </div>
             </div>
             <input 
@@ -303,6 +313,7 @@
     <script>
         let uploadedImages = [];
         const maxImages = 9;
+        const minImages = 1; // ✅ at least one image is now required
         const maxFileSize = 5 * 1024 * 1024; // 5MB
 
         // Get CSRF token for Django
@@ -377,6 +388,17 @@
             }
         }
 
+        // ✅ Toggle the "required" visual hint on the upload box depending
+        // on whether at least one image has been added yet.
+        function updateUploadAreaState() {
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadedImages.length >= minImages) {
+                uploadArea.classList.remove('required-empty');
+            } else {
+                uploadArea.classList.add('required-empty');
+            }
+        }
+
         function handleImageUpload(event) {
             const files = Array.from(event.target.files);
             
@@ -413,6 +435,7 @@
                         dataUrl: e.target.result
                     });
                     renderImagePreviews();
+                    updateUploadAreaState();
                 };
                 reader.readAsDataURL(file);
             });
@@ -442,6 +465,7 @@
         function removeImage(index) {
             uploadedImages.splice(index, 1);
             renderImagePreviews();
+            updateUploadAreaState();
         }
 
         async function publishBlog() {
@@ -460,6 +484,14 @@
 
             if (content.length > 2000) {
                 showAlert('Blog content should not exceed 2000 characters', 'warning');
+                return;
+            }
+
+            // ✅ Image is now REQUIRED — block submission entirely if none
+            // have been added, matching the backend's requirement.
+            if (uploadedImages.length < minImages) {
+                showAlert('Please upload at least one image before publishing', 'warning');
+                document.getElementById('uploadArea').scrollIntoView({ behavior: 'smooth', block: 'center' });
                 return;
             }
 
@@ -499,6 +531,7 @@
                     uploadedImages = [];
                     renderImagePreviews();
                     updateCharCount();
+                    updateUploadAreaState();
                 } else {
                     showAlert(result.message || 'Failed to publish blog. Please try again.', 'danger');
                 }
@@ -538,6 +571,7 @@
                             dataUrl: e.target.result
                         });
                         renderImagePreviews();
+                        updateUploadAreaState();
                         showAlert('Image pasted successfully!', 'success');
                     };
                     reader.readAsDataURL(file);
@@ -556,6 +590,7 @@
 
         // Initialize
         updateCharCount();
+        updateUploadAreaState();
     </script>
 </body>
 </html>

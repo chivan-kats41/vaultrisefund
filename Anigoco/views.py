@@ -56,6 +56,21 @@ def home(request):
         'vip_level':     vip_level,
         'total_balance': total_balance,
 
+        # ✅ Pass the actual profile object too — not just fields pulled
+        # out of it — so the template can reference things like
+        # profile.avatar directly (matching every other page: account(),
+        # rewards(), info(), etc. all do this already). Without this, the
+        # header avatar had to fall back to the user.profile.avatar
+        # reverse-relation trick in the template just to work at all.
+        'profile': profile,
+
+        # ✅ One-time "you just logged in" flag for the channel-join popup.
+        # request.session.pop() both reads AND removes the key in one step,
+        # so this only evaluates True on the request immediately after
+        # login_view sets it — a page refresh afterwards won't re-trigger
+        # the popup, since the flag is already gone from the session.
+        'show_welcome_popup': request.session.pop('just_logged_in', False),
+
         'products_json': json.dumps(
             [p.as_dict() for p in all_products],
             cls=DjangoJSONEncoder
@@ -70,5 +85,3 @@ def home(request):
     }
 
     return render(request, 'home.html', context)
-
-

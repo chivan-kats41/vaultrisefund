@@ -15,4 +15,8 @@ urlpatterns = [
     path('api/post/<int:post_id>/comments/', views.api_blog_comments, name='api_blog_comments'),
     path('api/post/<int:post_id>/report/', views.api_blog_report, name='api_blog_report'),
     path('api/my-posts/', views.api_my_posts, name='api_my_posts'),
+
+    # ✅ Admin-only endpoints (added for this update)
+    path('api/post/<int:post_id>/approve/', views.api_blog_admin_approve, name='api_blog_admin_approve'),
+    path('api/post/<int:post_id>/reject/', views.api_blog_admin_reject, name='api_blog_admin_reject'),
 ]

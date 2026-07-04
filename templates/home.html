@@ -28,12 +28,22 @@
         width: 44px;
         height: 44px;
         flex-shrink: 0;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f0f0f0;
     }
-    .user-avatar img,
-    .user-avatar .material-symbols-outlined {
+    .user-avatar img {
         width: 100%;
         height: 100%;
-        font-size: 44px;
+        object-fit: cover;
+        display: block;
+    }
+    .user-avatar .material-symbols-outlined {
+        font-size: 26px;
+        color: #999;
     }
 
     .index-header .fw-bold {
@@ -212,8 +222,7 @@
             border-radius: 0 0 20px 20px;
         }
         .user-avatar { width: 52px; height: 52px; }
-        .user-avatar img,
-        .user-avatar .material-symbols-outlined { font-size: 52px; }
+        .user-avatar .material-symbols-outlined { font-size: 30px; }
         .index-header .fw-bold { font-size: 1.05rem; }
         .index-menu h3 { font-size: 1.9rem; }
         .menu-icon { font-size: 30px; }
@@ -399,17 +408,23 @@
         <div class="d-flex align-items-center">
             <div class="user-avatar me-3">
                 {% if profile.avatar %}
-                    <img src="{{ profile.avatar.url }}" alt="avatar"
-                         style="width:100%;height:100%;border-radius:50%;object-fit:cover;">
+                    <img src="{{ profile.avatar.url }}" alt="avatar">
+                {% elif user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="avatar">
                 {% else %}
                     <span class="material-symbols-outlined">account_circle</span>
                 {% endif %}
             </div>
             <div>
-                <!-- ✅ Nickname bold on top, masked phone + registration ID small/muted below -->
+                <!-- ✅ Nickname bold on top; masked phone and registration ID
+                     each on their own line below (explicit <br> so they
+                     don't collapse into a single run-on line). Falls back
+                     through user.nickname / user.username in case the
+                     'nickname' context variable isn't passed by whichever
+                     view actually serves this page. -->
                 <div class="fw-bold">{{ nickname }}</div>
                 <div class="text-muted small">
-                    0{{ user.username|slice:"3:5" }}****{{ user.username|slice:"-3:" }}
+                    0{{ username|slice:"3:5" }}****{{ username|slice:"-3:" }}<br>
                     ID: {{ user.registration_id }}
                 </div>
             </div>
@@ -762,6 +777,16 @@ renderProductsByCategory('Stable Plan', 'product_type_1');
 
 // ✅ Warm the balance/VIP cache on page load so the first dialog open is instant
 fetchBalance();
+
+// ✅ Auto-show the "join our channel" popup immediately after login.
+// `show_welcome_popup` must be set in this view's context, e.g.:
+//     show_welcome_popup = request.session.pop('just_logged_in', False)
+// Using session.pop() (not .get()) is what makes this fire only ONCE per
+// login — the flag is consumed the moment it's read, so refreshing the
+// homepage afterwards won't keep re-triggering the popup.
+{% if show_welcome_popup %}
+document.getElementById('whatsapp_dialog').style.display = 'flex';
+{% endif %}
 </script>
 
 {% endblock %}

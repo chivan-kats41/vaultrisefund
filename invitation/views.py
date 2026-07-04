@@ -41,17 +41,17 @@ def get_invitation_stats(request):
         try:
             rate_l1 = CommissionRate.objects.get(level=1, vip_level=0, is_active=True).rate
         except CommissionRate.DoesNotExist:
-            rate_l1 = Decimal('12.00')
+            rate_l1 = Decimal('16.00')
 
         try:
             rate_l2 = CommissionRate.objects.get(level=2, vip_level=0, is_active=True).rate
         except CommissionRate.DoesNotExist:
-            rate_l2 = Decimal('8.00')
+            rate_l2 = Decimal('12.00')
 
         try:
             rate_l3 = CommissionRate.objects.get(level=3, vip_level=0, is_active=True).rate
         except CommissionRate.DoesNotExist:
-            rate_l3 = Decimal('16.00')
+            rate_l3 = Decimal('8.00')
 
         def level_stats(lvl):
             return ReferralRelationship.objects.filter(

@@ -247,6 +247,26 @@
         .stat_item i {
             font-size: 16px;
         }
+
+        /* ✅ Like button — clickable stat item */
+        .stat_item.like_btn {
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.15s ease;
+        }
+
+        .stat_item.like_btn:active {
+            transform: scale(0.9);
+        }
+
+        .stat_item.like_btn i.fas.fa-heart {
+            color: #e53935;
+        }
+
+        .stat_item.like_btn.disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
         
         /* Loading Spinner */
         .loading_spinner {
@@ -441,7 +461,7 @@
                     Share withdrawal screenshots to receive cash rewards
                 </p>
                 <p class="text" style="font-size: 14px; color: #666; line-height: 1.6; margin-bottom: 25px;">
-                    Post your successful withdrawal screenshots and experiences. Once approved, you will receive rewards ranging from 100 to 500,000!
+                    Post your successful withdrawal screenshots and experiences. Once approved, our admin team will review it and set your reward — anywhere from 100 to 500,000!
                 </p>
                 <div class="i_know" data-bs-dismiss="modal" style="background: var(--primary-color); color: white; padding: 12px 40px; border-radius: 25px; cursor: pointer; display: inline-block; font-weight: 600;">
                     I Know
@@ -480,6 +500,15 @@
 
     const csrftoken = getCookie('csrftoken');
 
+    // ✅ Reusable URL template trick: ask Django to reverse the URL for a
+    // dummy post id of 0, then swap in the real id at call time. This way
+    // we never hardcode the URL path here — it always matches urls.py.
+    const likeUrlTemplate = "{% url 'api_blog_like' 0 %}";
+
+    function buildLikeUrl(postId) {
+        return likeUrlTemplate.replace('/0/', `/${postId}/`);
+    }
+
     // Function to render blog posts
     function renderBlogPosts(blogs, append = false) {
         const container = document.getElementById('blog_contents');
@@ -507,6 +536,11 @@
             if (blog.is_featured) {
                 badges += `<span class="featured_badge"><i class="fas fa-star"></i> Featured</span>`;
             }
+
+            // ✅ Heart renders filled+red if the current user already liked
+            // this post (blog.user_liked, from api_blog_list), outlined
+            // otherwise. Clicking toggles it via toggleLike() below.
+            const heartClass = blog.user_liked ? 'fas fa-heart' : 'far fa-heart';
             
             return `
                 <div class="blog_card" data-post-id="${blog.id}">
@@ -539,11 +573,11 @@
                     <div class="engagement_stats">
                         <div class="stat_item">
                             <i class="fas fa-eye"></i>
-                            <span>${blog.view_count || 0}</span>
+                            <span>${blog.view_count || 0} views</span>
                         </div>
-                        <div class="stat_item">
-                            <i class="fas fa-heart"></i>
-                            <span>${blog.like_count || 0}</span>
+                        <div class="stat_item like_btn" onclick="toggleLike(${blog.id}, this)" data-liked="${blog.user_liked ? '1' : '0'}">
+                            <i class="${heartClass}" id="heart-icon-${blog.id}"></i>
+                            <span id="like-count-${blog.id}">${blog.like_count || 0}</span>
                         </div>
                         <div class="stat_item">
                             <i class="fas fa-comment"></i>
@@ -564,6 +598,54 @@
             container.insertAdjacentHTML('beforeend', blogsHTML);
         } else {
             container.innerHTML = blogsHTML;
+        }
+    }
+
+    // ✅ Toggle like/unlike for a post. Any logged-in user can do this —
+    // it's the one engagement action that's deliberately NOT admin-only.
+    async function toggleLike(postId, el) {
+        if (el.classList.contains('disabled')) return; // prevent double-clicks mid-request
+        el.classList.add('disabled');
+
+        const heartIcon = document.getElementById(`heart-icon-${postId}`);
+        const countSpan = document.getElementById(`like-count-${postId}`);
+
+        try {
+            const response = await fetch(buildLikeUrl(postId), {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.status === 401) {
+                alert('Please log in to like this post.');
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data.success) {
+                countSpan.textContent = data.like_count;
+                if (data.action === 'liked') {
+                    heartIcon.classList.remove('far');
+                    heartIcon.classList.add('fas');
+                    el.dataset.liked = '1';
+                } else {
+                    heartIcon.classList.remove('fas');
+                    heartIcon.classList.add('far');
+                    el.dataset.liked = '0';
+                }
+            } else {
+                alert(data.message || 'Failed to update like. Please try again.');
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);
+            alert('Something went wrong. Please check your connection.');
+        } finally {
+            el.classList.remove('disabled');
         }
     }
 

@@ -10,6 +10,27 @@ Provides comprehensive admin interface for managing:
 - Reports and flagged content
 - Rewards and payments
 
+CRITICAL FIX (this update):
+----------------------------
+Editing a BlogPost directly in the change form and setting status to
+"Approved" previously just did a plain save — it never called
+BlogPost.approve(), so the commission wallet was never credited and no
+Notification was ever sent, even though the post showed as "approved" in
+the list. BlogPostAdmin.save_model() below now detects a transition into
+'approved' or 'rejected' and routes it through post.approve() / post.reject()
+instead of a raw save, so the change form now behaves identically to the
+API endpoints (blog/views.py: api_blog_admin_approve / api_blog_admin_reject).
+
+The bulk actions (approve_posts, reject_posts, pay_rewards,
+mark_as_approved_and_pay) and BlogRewardAdmin.process_payments have also
+been rewritten to delegate to BlogPost.approve() / BlogPost.reject() /
+BlogPost.credit_reward_and_notify() instead of manually duplicating the
+balance-crediting logic — this fixes a broken approve_posts action (it was
+missing the now-required reward_amount argument and would have raised a
+TypeError), removes duplicate notifications, and makes it impossible to
+double-credit the same post's reward twice (credit_reward_and_notify() is
+idempotent, guarded by reward_paid).
+
 Features:
 - Bulk approval/rejection actions
 - Inline image management
@@ -18,6 +39,7 @@ Features:
 - Reward payment processing
 """
 
+from django import forms
 from django.contrib import admin
 from django.utils.html import format_html
 from django.db.models import Count, Sum, Q, Avg
@@ -33,7 +55,9 @@ from .models import (
     BlogLike,
     BlogView,
     BlogReport,
-    BlogReward
+    BlogReward,
+    MIN_REWARD_AMOUNT,
+    MAX_REWARD_AMOUNT,
 )
 from users.models import Transaction, Notification
 
@@ -89,11 +113,45 @@ class BlogCommentInline(admin.TabularInline):
         return False
 
 
+# ==================== BLOG POST ADMIN FORM ====================
+
+class BlogPostAdminForm(forms.ModelForm):
+    """
+    Validates the reward_amount range at the form level whenever an admin
+    sets status to 'approved', so they get a clear inline error immediately
+    instead of a generic failure after clicking Save.
+    """
+
+    class Meta:
+        model = BlogPost
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        status = cleaned_data.get('status')
+        reward_amount = cleaned_data.get('reward_amount')
+
+        if status == 'approved':
+            if reward_amount is None or reward_amount <= 0:
+                raise forms.ValidationError(
+                    'A reward_amount is required to approve a post.'
+                )
+            if reward_amount < MIN_REWARD_AMOUNT or reward_amount > MAX_REWARD_AMOUNT:
+                raise forms.ValidationError(
+                    f'Reward amount must be between UGX {MIN_REWARD_AMOUNT:,.0f} '
+                    f'and UGX {MAX_REWARD_AMOUNT:,.0f}.'
+                )
+
+        return cleaned_data
+
+
 # ==================== BLOG POST ADMIN ====================
 
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
     """Admin interface for Blog Posts with approval workflow"""
+
+    form = BlogPostAdminForm
     
     list_display = [
         'id',
@@ -133,6 +191,7 @@ class BlogPostAdmin(admin.ModelAdmin):
         'rejected_at',
         'engagement_stats_display',
         'images_display',
+        'reward_paid',
         'reward_paid_at'
     ]
     
@@ -171,6 +230,13 @@ class BlogPostAdmin(admin.ModelAdmin):
                 'reward_currency',
                 'reward_paid',
                 'reward_paid_at'
+            ),
+            'description': (
+                'Set reward_amount (UGX 100 - 500,000) BEFORE changing status '
+                'to "Approved" and saving. Saving with status=Approved will '
+                'automatically credit this amount to the user\'s commission '
+                'wallet and send them a notification — you do not need any '
+                'separate "pay reward" step.'
             )
         }),
         ('Engagement Metrics', {
@@ -213,6 +279,60 @@ class BlogPostAdmin(admin.ModelAdmin):
         'pay_rewards',
         'mark_as_approved_and_pay'
     ]
+
+    # ---------------------------------------------------------------
+    # THE ACTUAL FIX: route change-form saves through approve()/reject()
+    # ---------------------------------------------------------------
+    def save_model(self, request, obj, form, change):
+        """
+        Detects a status transition into 'approved' or 'rejected' on a
+        normal change-form save and routes it through BlogPost.approve()
+        / BlogPost.reject() instead of a raw save, so the commission
+        wallet credit + Transaction + Notification always fire — exactly
+        like the api_blog_admin_approve / api_blog_admin_reject endpoints.
+
+        Editing any other field (content, admin_notes, is_featured, etc.)
+        without changing status behaves like a completely normal save.
+
+        approve() is safe to call even if invoked more than once on the
+        same post, since credit_reward_and_notify() is guarded by
+        reward_paid and will not credit twice.
+        """
+        old_status = None
+        if change and obj.pk:
+            old_status = BlogPost.objects.filter(pk=obj.pk).values_list(
+                'status', flat=True
+            ).first()
+
+        transitioning_to_approved = obj.status == 'approved' and old_status != 'approved'
+        transitioning_to_rejected = obj.status == 'rejected' and old_status != 'rejected'
+
+        if transitioning_to_approved:
+            reward_amount = obj.reward_amount
+            # Persist every other edited field first (content, notes, etc.)
+            super().save_model(request, obj, form, change)
+            try:
+                obj.approve(approved_by=request.user, reward_amount=reward_amount)
+                self.message_user(
+                    request,
+                    f"Post #{obj.id} approved — UGX {reward_amount:,.2f} "
+                    f"credited to {obj.user.username}'s commission wallet."
+                )
+            except ValueError as e:
+                # Range check failed (belt-and-braces on top of the form's
+                # own validation). Post stays saved with its other field
+                # edits, but not actually approved.
+                self.message_user(request, str(e), level='error')
+            return
+
+        if transitioning_to_rejected:
+            super().save_model(request, obj, form, change)
+            obj.reject(reason=obj.rejection_reason)
+            self.message_user(request, f"Post #{obj.id} rejected and user notified.")
+            return
+
+        # No status transition — ordinary save.
+        super().save_model(request, obj, form, change)
     
     def user_display(self, obj):
         """Display username with link to user"""
@@ -388,48 +508,52 @@ class BlogPostAdmin(admin.ModelAdmin):
         return '-'
     action_buttons.short_description = 'Quick Actions'
     
-    # Admin Actions
+    # ==================== ADMIN ACTIONS ====================
     
     def approve_posts(self, request, queryset):
-        """Bulk approve blog posts"""
+        """
+        Bulk approve blog posts. Each post must already have a valid
+        reward_amount set (UGX 100 - 500,000) — since a bulk action has no
+        per-post input field, there's no way to ask for one here. Set
+        reward_amount on each post first (e.g. via the list view's editable
+        column, or open each post and set it) before running this action.
+
+        Delegates entirely to BlogPost.approve(), so the commission wallet
+        credit, Transaction, and Notification all fire exactly as they
+        would through the API or a single change-form save. No separate
+        notification is created here — approve() already sends one.
+        """
         approved = 0
+        skipped = 0
         for post in queryset.filter(status='pending'):
-            post.approve(approved_by=request.user)
-            
-            # Send notification
+            if not post.reward_amount or post.reward_amount <= 0:
+                skipped += 1
+                continue
             try:
-                Notification.objects.create(
-                    user=post.user,
-                    title="Blog Post Approved! ✅",
-                    message=f"Your blog post has been approved and is now visible to everyone!",
-                    notification_type='system',
-                    is_important=True
-                )
-            except:
-                pass
-            
-            approved += 1
-        
-        self.message_user(request, f'{approved} posts approved.')
-    approve_posts.short_description = 'Approve selected posts'
+                post.approve(approved_by=request.user, reward_amount=post.reward_amount)
+                approved += 1
+            except ValueError:
+                skipped += 1
+
+        msg = f'{approved} posts approved.'
+        if skipped:
+            msg += (
+                f' {skipped} skipped — set a valid reward_amount '
+                f'(UGX {MIN_REWARD_AMOUNT:,.0f} - {MAX_REWARD_AMOUNT:,.0f}) '
+                f'on each post first.'
+            )
+        self.message_user(request, msg)
+    approve_posts.short_description = 'Approve selected posts (reward_amount must already be set)'
     
     def reject_posts(self, request, queryset):
-        """Bulk reject blog posts"""
+        """
+        Bulk reject blog posts. Delegates to BlogPost.reject(), which
+        already creates the "your post was rejected" Notification — no
+        duplicate notification is created here.
+        """
         rejected = 0
         for post in queryset.filter(status='pending'):
             post.reject(reason="Rejected by admin")
-            
-            # Send notification
-            try:
-                Notification.objects.create(
-                    user=post.user,
-                    title="Blog Post Rejected",
-                    message=f"Your blog post did not meet our guidelines and has been rejected.",
-                    notification_type='system'
-                )
-            except:
-                pass
-            
             rejected += 1
         
         self.message_user(request, f'{rejected} posts rejected.')
@@ -460,66 +584,22 @@ class BlogPostAdmin(admin.ModelAdmin):
     unpin_posts.short_description = 'Unpin posts'
     
     def pay_rewards(self, request, queryset):
-        """Pay rewards for approved posts"""
+        """
+        Pay out rewards for posts that are approved but not yet paid —
+        mainly a catch-up tool for posts approved before this crediting
+        system existed. Delegates to BlogPost.credit_reward_and_notify(),
+        which is idempotent (guarded by reward_paid), so this can never
+        double-credit a post that approve() already paid out.
+        """
         paid = 0
         total_amount = Decimal('0.00')
         
         for post in queryset.filter(status='approved', reward_paid=False, reward_amount__gt=0):
             try:
-                user = post.user
-                profile = user.profile
-                amount = post.reward_amount
-                
-                # Credit balance
-                profile.commission_balance += amount
-                profile.save(update_fields=['commission_balance'])
-                
-                # Create transaction
-                transaction = Transaction.objects.create(
-                    user=user,
-                    transaction_number=f"BLOG{post.id}_{timezone.now().strftime('%Y%m%d%H%M%S')}",
-                    transaction_type='referral_bonus',
-                    amount=amount,
-                    balance_type='commission_balance',
-                    balance_before=profile.commission_balance - amount,
-                    balance_after=profile.commission_balance,
-                    description=f"Blog post reward for post #{post.id}",
-                    reference_id=str(post.id),
-                    status='completed'
-                )
-                
-                # Create or update reward record
-                reward, created = BlogReward.objects.get_or_create(
-                    blog=post,
-                    defaults={
-                        'user': user,
-                        'amount': amount,
-                        'currency': post.reward_currency,
-                        'approved_by': request.user
-                    }
-                )
-                reward.mark_as_paid(transaction=transaction)
-                
-                # Update post
-                post.reward_paid = True
-                post.reward_paid_at = timezone.now()
-                post.save(update_fields=['reward_paid', 'reward_paid_at'])
-                
-                # Send notification
-                try:
-                    Notification.objects.create(
-                        user=user,
-                        title="Blog Reward Received! 💰",
-                        message=f"You've received {post.reward_currency} {amount:,.0f} reward for your blog post!",
-                        notification_type='referral',
-                        is_important=True
-                    )
-                except:
-                    pass
-                
-                paid += 1
-                total_amount += amount
-                
+                transaction = post.credit_reward_and_notify(post.reward_amount)
+                if transaction is not None:
+                    paid += 1
+                    total_amount += post.reward_amount
             except Exception as e:
                 self.message_user(
                     request,
@@ -532,23 +612,27 @@ class BlogPostAdmin(admin.ModelAdmin):
             request,
             f'{paid} rewards paid totaling {total_amount:,.2f}'
         )
-    pay_rewards.short_description = 'Pay rewards'
+    pay_rewards.short_description = 'Pay rewards (for posts approved but not yet credited)'
     
     def mark_as_approved_and_pay(self, request, queryset):
-        """Approve posts and pay rewards in one action"""
+        """
+        Approve posts (setting a default reward if none is set) and pay
+        rewards in one action. Approving already credits the wallet, so
+        there is no separate "pay" step needed afterward.
+        """
         processed = 0
         
         for post in queryset.filter(status='pending'):
             # Set default reward if not set
             if post.reward_amount == 0:
-                post.reward_amount = Decimal('5000.00')  # Default reward
+                post.reward_amount = Decimal('5000.00')
+                post.save(update_fields=['reward_amount'])
             
-            # Approve
-            post.approve(approved_by=request.user, reward_amount=post.reward_amount)
-            processed += 1
-        
-        # Now pay the rewards
-        self.pay_rewards(request, queryset.filter(status='approved', reward_paid=False))
+            try:
+                post.approve(approved_by=request.user, reward_amount=post.reward_amount)
+                processed += 1
+            except ValueError as e:
+                self.message_user(request, f'Post {post.id}: {e}', level='error')
         
         self.message_user(request, f'{processed} posts approved and rewards paid.')
     mark_as_approved_and_pay.short_description = 'Approve & pay rewards'
@@ -971,56 +1055,34 @@ class BlogRewardAdmin(admin.ModelAdmin):
     payment_status.short_description = 'Status'
     
     def process_payments(self, request, queryset):
-        """Process pending reward payments"""
+        """
+        Process pending BlogReward payments. Delegates the actual crediting
+        to BlogPost.credit_reward_and_notify(), which is idempotent — if
+        the post's reward was already credited (e.g. via approve() when
+        the post was first approved), this just links up the existing
+        Transaction to this BlogReward record instead of crediting again.
+        """
         paid = 0
         total_amount = Decimal('0.00')
         
         for reward in queryset.filter(is_paid=False):
             try:
-                user = reward.user
-                profile = user.profile
-                amount = reward.amount
-                
-                # Credit balance
-                profile.commission_balance += amount
-                profile.save(update_fields=['commission_balance'])
-                
-                # Create transaction
-                transaction = Transaction.objects.create(
-                    user=user,
-                    transaction_number=f"BLOG{reward.blog.id}_{timezone.now().strftime('%Y%m%d%H%M%S')}",
-                    transaction_type='referral_bonus',
-                    amount=amount,
-                    balance_type='commission_balance',
-                    balance_before=profile.commission_balance - amount,
-                    balance_after=profile.commission_balance,
-                    description=f"Blog post reward for post #{reward.blog.id}",
-                    reference_id=str(reward.blog.id),
-                    status='completed'
-                )
-                
-                # Mark as paid
+                blog = reward.blog
+                transaction = blog.credit_reward_and_notify(reward.amount)
+
+                if transaction is None:
+                    # Already credited earlier (e.g. via approve()) — find
+                    # that existing Transaction to link on this record
+                    # instead of crediting the wallet a second time.
+                    transaction = Transaction.objects.filter(
+                        reference_id=f'BLOG{blog.id}',
+                        transaction_type='blog_reward',
+                    ).order_by('-created_at').first()
+
                 reward.mark_as_paid(transaction=transaction)
                 
-                # Update blog post
-                reward.blog.reward_paid = True
-                reward.blog.reward_paid_at = timezone.now()
-                reward.blog.save(update_fields=['reward_paid', 'reward_paid_at'])
-                
-                # Send notification
-                try:
-                    Notification.objects.create(
-                        user=user,
-                        title="Blog Reward Received! 💰",
-                        message=f"You've received {reward.currency} {amount:,.0f} reward for your blog post!",
-                        notification_type='referral',
-                        is_important=True
-                    )
-                except:
-                    pass
-                
                 paid += 1
-                total_amount += amount
+                total_amount += reward.amount
                 
             except Exception as e:
                 self.message_user(
@@ -1192,6 +1254,6 @@ BlogPostAdmin.list_filter.extend([RewardAmountFilter, EngagementFilter])
 
 # ==================== ADMIN SITE CUSTOMIZATION ====================
 
-admin.site.site_header = "Agnicoeagle Investment Platform"
-admin.site.site_title = "Agnicoeagle Admin"
+admin.site.site_header = "Vaultrise Investment Platform"
+admin.site.site_title = "Vaultrise Admin"
 admin.site.index_title = "Blog Management Dashboard"
